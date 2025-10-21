@@ -1,0 +1,109 @@
+version: '3.8'
+
+services:
+  flowise:
+    build: .
+    container_name: flowise-evently
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+      - DATABASE_PATH=/app/database
+      - SECRETKEY_PATH=/app/secretkey
+      - LOG_LEVEL=info
+      - LOG_PATH=/app/logs
+      - FLOWISE_USERNAME=${FLOWISE_USERNAME:-admin}
+      - FLOWISE_PASSWORD=${FLOWISE_PASSWORD:-admin123}
+      - EVENTLY_API_URL=${EVENTLY_API_URL:-http://evently-api:5000}
+      - EVENTLY_API_TOKEN=${EVENTLY_API_TOKEN}
+    env_file:
+      - .env
+    volumes:
+      - flowise_data:/app/database
+      - flowise_secrets:/app/secretkey
+      - flowise_logs:/app/logs
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/api/v1/ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    networks:
+      - flowise-network
+    depends_on:
+      - postgres
+      - redis
+
+  # PostgreSQL для персистентности данных
+  postgres:
+    image: postgres:15-alpine
+    container_name: flowise-postgres
+    environment:
+      - POSTGRES_DB=${DB_DATABASE:-flowise}
+      - POSTGRES_USER=${DB_USERNAME:-flowise}
+      - POSTGRES_PASSWORD=${DB_PASSWORD:-flowise_password}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    restart: unless-stopped
+    networks:
+      - flowise-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USERNAME:-flowise}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Redis для кеширования
+  redis:
+    image: redis:7-alpine
+    container_name: flowise-redis
+    command: redis-server --appendonly yes --requirepass ${REDIS_PASSWORD:-}
+    volumes:
+      - redis_data:/data
+    restart: unless-stopped
+    networks:
+      - flowise-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Nginx для reverse proxy (опционально)
+  nginx:
+    image: nginx:alpine
+    container_name: flowise-nginx
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./ssl:/etc/nginx/ssl:ro
+    restart: unless-stopped
+    networks:
+      - flowise-network
+    depends_on:
+      - flowise
+    profiles:
+      - nginx
+
+volumes:
+  flowise_data:
+    driver: local
+  flowise_secrets:
+    driver: local
+  flowise_logs:
+    driver: local
+  postgres_data:
+    driver: local
+  redis_data:
+    driver: local
+
+networks:
+  flowise-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16

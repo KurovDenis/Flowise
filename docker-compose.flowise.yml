@@ -1,0 +1,121 @@
+version: '3.8'
+
+###############################################################################
+# Flowise with Auto-Import Chatflows
+#
+# Features:
+# - Auto-import chatflows from ./chatflows/*.json on startup
+# - PostgreSQL for persistent storage
+# - Volume for uploaded files
+#
+# Usage:
+#   docker-compose -f docker-compose.flowise.yml up -d
+###############################################################################
+
+services:
+  flowise:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: evently.flowise
+    ports:
+      - "3005:3000"
+    environment:
+      # Server
+      - PORT=3000
+      - NODE_ENV=production
+      
+      # Database (PostgreSQL)
+      - DATABASE_TYPE=postgres
+      - DATABASE_HOST=flowise-db
+      - DATABASE_PORT=5432
+      - DATABASE_USER=flowise
+      - DATABASE_PASSWORD=flowise_password
+      - DATABASE_NAME=flowise
+      
+      # Auth (опционально)
+      - FLOWISE_USERNAME=admin
+      - FLOWISE_PASSWORD=password123
+      
+      # Logging
+      - LOG_LEVEL=info
+      
+      # File storage
+      - BLOB_STORAGE_PATH=/app/storage
+      
+      # CORS
+      - CORS_ORIGINS=*
+      
+    volumes:
+      # Chatflows для auto-import
+      - ./chatflows:/app/chatflows:ro
+      
+      # Scripts для импорта
+      - ./scripts:/app/scripts:ro
+      
+      # Storage для uploaded files
+      - flowise_storage:/app/storage
+      
+      # Logs
+      - flowise_logs:/app/logs
+      
+    depends_on:
+      flowise-db:
+        condition: service_healthy
+    
+    # Auto-import chatflows on startup
+    command: >
+      sh -c "
+        echo '🚀 Starting Flowise...' &&
+        npm start &
+        FLOWISE_PID=$$! &&
+        echo '⏳ Waiting for Flowise to be ready...' &&
+        sleep 15 &&
+        echo '📦 Importing chatflows...' &&
+        node scripts/import-chatflows.js || true &&
+        echo '✅ Flowise ready!' &&
+        wait $$FLOWISE_PID
+      "
+    
+    networks:
+      - flowise-network
+    
+    restart: unless-stopped
+    
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/api/v1/chatflows"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+  
+  flowise-db:
+    image: postgres:15-alpine
+    container_name: evently.flowise.db
+    environment:
+      - POSTGRES_DB=flowise
+      - POSTGRES_USER=flowise
+      - POSTGRES_PASSWORD=flowise_password
+    volumes:
+      - flowise_postgres:/var/lib/postgresql/data
+    networks:
+      - flowise-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U flowise"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  flowise_postgres:
+    driver: local
+  flowise_storage:
+    driver: local
+  flowise_logs:
+    driver: local
+
+networks:
+  flowise-network:
+    driver: bridge
+

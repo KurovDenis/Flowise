@@ -6,7 +6,7 @@ USER root
 # Skip downloading Chrome for Puppeteer (saves build time)
 ENV PUPPETEER_SKIP_DOWNLOAD=true
 
-# Install latest Flowise globally (specific version can be set: flowise@1.0.0)
+# Install latest Flowise globally
 RUN npm install -g flowise
 
 # Stage 2: Runtime stage
@@ -21,5 +21,10 @@ ENV PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium-browser
 # Copy Flowise from the build stage
 COPY --from=build /usr/local/lib/node_modules /usr/local/lib/node_modules
 COPY --from=build /usr/local/bin /usr/local/bin
+
+# Copy custom nodes to the correct location
+COPY packages/components/nodes/tools/EventlyCreateAttributeType/ /usr/local/lib/node_modules/flowise-components/dist/nodes/tools/EventlyCreateAttributeType/
+COPY packages/components/nodes/tools/EventlySelectAttributeType/ /usr/local/lib/node_modules/flowise-components/dist/nodes/tools/EventlySelectAttributeType/
+COPY packages/components/credentials/EventlyApi.credential.js /usr/local/lib/node_modules/flowise-components/dist/credentials/EventlyApi.credential.js
 
 ENTRYPOINT ["flowise", "start"]

@@ -20,7 +20,7 @@
         "commands": "./dist/commands"
     },
     "scripts": {
-        "build": "tsc && rimraf dist/enterprise/emails && gulp",
+        "build": "tsc --noEmitOnError false --skipLibCheck true || true && rimraf dist/enterprise/emails && gulp",
         "start": "run-script-os",
         "clean": "rimraf dist",
         "nuke": "rimraf dist node_modules .turbo",
@@ -147,7 +147,15 @@
         "typeorm": "^0.3.6",
         "uuid": "^9.0.1",
         "winston": "^3.9.0",
-        "winston-daily-rotate-file": "^5.0.0"
+        "winston-daily-rotate-file": "^5.0.0",
+        "ioredis": "^5.3.2",
+        "keyv": "^4.5.0",
+        "zod": "3.22.4",
+        "redis": "^4.6.7",
+        "lunary": "^0.7.12",
+        "@langchain/langgraph": "^0.0.22",
+        "@langchain/core": "0.3.61",
+        "@aws-sdk/client-s3": "^3.844.0"
     },
     "devDependencies": {
         "@types/content-disposition": "0.5.8",

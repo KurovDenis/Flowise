@@ -1,0 +1,49 @@
+# Chatflows Directory
+
+Эта директория содержит экспортированные chatflows в формате JSON.
+
+## Структура
+
+```
+chatflows/
+├── attributevalue-agent.json    # AttributeValue Management Agent
+├── events-agent.json             # Events Management Agent (будущий)
+└── ticketing-agent.json          # Ticketing Support Agent (будущий)
+```
+
+## Как экспортировать chatflows
+
+```bash
+# Через скрипт (рекомендуется)
+node scripts/export-chatflows.js
+
+# Или через Flowise UI:
+# 1. Открой http://localhost:3005
+# 2. Chatflows → ... → Export
+# 3. Сохрани JSON в эту директорию
+```
+
+## Как импортировать chatflows
+
+```bash
+# При деплое (автоматически)
+node scripts/import-chatflows.js
+
+# Или через Flowise UI:
+# 1. Открой http://localhost:3005
+# 2. Chatflows → Import
+# 3. Выбери JSON файл из этой директории
+```
+
+## Версионирование
+
+✅ **Commit chatflows в git!**
+
+```bash
+git add chatflows/*.json
+git commit -m "Add/Update chatflows"
+git push
+```
+
+При деплое chatflows автоматически импортируются из git.
+

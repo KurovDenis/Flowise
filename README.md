@@ -174,6 +174,23 @@ Flowise supports different environment variables to configure your instance. You
 
 You can view the Flowise Docs [here](https://docs.flowiseai.com/)
 
+### Agent Memory (Quick References)
+
+Task-based reference cards for Flowise × Evently setup and development are available in `agent-memory/`:
+
+- [Setup Flowise](./agent-memory/SETUP_FLOWISE.md)
+- [Generate Tools](./agent-memory/TOOLS_GENERATION.md)
+- [Build & Run](./agent-memory/BUILD_RUN.md)
+- [Credentials (JWT)](./agent-memory/CREDENTIALS_JWT.md)
+- [Create Chatflow](./agent-memory/CREATE_CHATFLOW.md)
+- [Versioning & Deploy](./agent-memory/VERSIONING_DEPLOY.md)
+- [Troubleshooting](./agent-memory/TROUBLESHOOTING.md)
+- [Test Scenarios](./agent-memory/TEST_SCENARIOS.md)
+- [Docker Commands](./agent-memory/DOCKER_COMMANDS.md)
+- [LangSmith Analytics](./agent-memory/LANGSMITH_ANALYTICS.md)
+- [Evently Endpoints](./agent-memory/EVENTLY_ENDPOINTS.md)
+- [Prompt Rules](./agent-memory/PROMPT_RULES.md)
+
 ## 🌐 Self Host
 
 Deploy Flowise self-hosted in your existing infrastructure, we support various [deployments](https://docs.flowiseai.com/configuration/deployment)
