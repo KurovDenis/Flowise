@@ -15,6 +15,17 @@ docker-compose build --no-cache evently.flowise
 docker-compose up -d evently.flowise
 ```
 
+**Пересборка с entrypoint скриптом (рекомендуется)**
+```bash
+cd C:\evently2\evently
+# Пересборка с новым entrypoint скриптом для автоматической инициализации БД
+docker-compose build --no-cache evently.flowise
+docker-compose up -d evently.flowise
+
+# Проверка логов инициализации
+docker logs Evently.Flowise | grep -E "(PostgreSQL|Database|Extensions)"
+```
+
 **Полная пересборка (если проблемы)**
 ```bash
 cd C:\evently2\evently
@@ -90,6 +101,52 @@ RUN pnpm install
 RUN cd packages/api-documentation && pnpm install
 RUN pnpm build
 CMD ["pnpm", "start"]
+```
+
+### 🗄️ Конфигурация базы данных (2025-01-21)
+
+**Проблема**: Flowise использовал SQLite по умолчанию, что не подходит для продакшена
+**Решение**: Настроена интеграция с PostgreSQL через entrypoint скрипт
+
+**Конфигурация PostgreSQL**:
+```yaml
+environment:
+  # База данных PostgreSQL
+  - DATABASE_TYPE=postgres
+  - DATABASE_HOST=evently.database
+  - DATABASE_PORT=5432
+  - DATABASE_USER=postgres
+  - DATABASE_PASSWORD=postgres
+  - DATABASE_NAME=flowise
+  - DATABASE_SSL=false
+```
+
+**Автоматическое создание БД**:
+- Entrypoint скрипт `flowise-fork/entrypoint.sh` создает базу `flowise` при каждом запуске контейнера
+- Устанавливает необходимые расширения PostgreSQL (uuid-ossp, pg_trgm)
+- Обрабатывает проблемы с collation версиями PostgreSQL
+- Flowise автоматически создает свои таблицы при подключении
+- Работает как для первого запуска, так и для перезапусков
+
+**Проверка подключения к БД**:
+```bash
+# Проверка создания базы данных
+docker exec Evently.Database psql -U postgres -c "\l" | findstr flowise
+
+# Проверка таблиц Flowise
+docker exec Evently.Database psql -U postgres -d flowise -c "\dt"
+
+# Просмотр логов инициализации
+docker logs Evently.Flowise | grep -E "(PostgreSQL|Database|Extensions)"
+```
+
+**Решение проблем с collation**:
+```bash
+# Если возникает ошибка "collation version mismatch"
+docker exec Evently.Database psql -U postgres -c "ALTER DATABASE template1 REFRESH COLLATION VERSION; ALTER DATABASE postgres REFRESH COLLATION VERSION;"
+
+# Создание базы данных вручную
+docker exec Evently.Database psql -U postgres -c "CREATE DATABASE flowise;"
 ```
 
 See also

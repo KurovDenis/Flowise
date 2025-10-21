@@ -16,6 +16,9 @@ RUN apk add --no-cache chromium
 # Fixes: https://github.com/FlowiseAI/Flowise/issues/4126
 RUN apk add --no-cache curl
 
+# Install PostgreSQL client for database initialization
+RUN apk add --no-cache postgresql-client
+
 #install PNPM globaly
 RUN npm install -g pnpm
 
@@ -28,6 +31,10 @@ WORKDIR /usr/src
 
 # Copy app source
 COPY . .
+
+# Copy and make entrypoint script executable
+COPY entrypoint.sh /usr/local/bin/entrypoint.sh
+RUN chmod +x /usr/local/bin/entrypoint.sh
 
 RUN pnpm install
 
@@ -46,4 +53,6 @@ ENV EVENTLY_API_TOKEN=eyJhbGciOiJSUzI1NiIsInR5cCIgOiAiSldUIiwia2lkIiA6ICJYTFBuX3
 HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
     CMD curl -f http://localhost:3000/api/v1/ping || exit 1
 
+# Use entrypoint script for database initialization
+ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
 CMD [ "pnpm", "start" ]
