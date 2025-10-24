@@ -11,7 +11,8 @@
         "nuke": "rimraf dist node_modules .turbo",
         "test": "jest",
         "test:watch": "jest --watch",
-        "test:coverage": "jest --coverage"
+        "test:coverage": "jest --coverage",
+        "gen:evently-types": "openapi-typescript ./nodes/tools/MCP/Evently/schemas/openapi.json --output ./nodes/tools/MCP/Evently/types/evently-api.ts"
     },
     "keywords": [],
     "homepage": "https://flowiseai.com",
@@ -85,6 +86,9 @@
         "apify-client": "^2.7.1",
         "assemblyai": "^4.2.2",
         "axios": "1.12.0",
+        "axios-retry": "^3.9.0",
+        "p-limit": "^5.0.0",
+        "opossum": "^8.0.0",
         "cheerio": "^1.0.0-rc.12",
         "chromadb": "^1.10.0",
         "cohere-ai": "^7.7.5",
@@ -182,6 +186,7 @@
         "@types/turndown": "^5.0.4",
         "gulp": "^4.0.2",
         "jest": "^29.7.0",
+        "openapi-typescript": "^7.4.2",
         "rimraf": "^5.0.5",
         "ts-jest": "^29.3.2",
         "tsc-watch": "^6.0.4",

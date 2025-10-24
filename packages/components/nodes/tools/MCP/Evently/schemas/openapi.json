@@ -1,0 +1,365 @@
+{
+  "openapi": "3.0.1",
+  "info": {
+    "title": "Evently API",
+    "version": "v1",
+    "description": "Evently API built using the modular monolith architecture."
+  },
+  "servers": [
+    {
+      "url": "http://localhost:5000/api"
+    }
+  ],
+  "paths": {
+    "/attribute-types": {
+      "get": {
+        "summary": "Получить все типы атрибутов",
+        "description": "Получает список всех типов атрибутов",
+        "tags": ["AttributeTypes"],
+        "security": [{"Bearer": []}],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/AttributeTypeResponse"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "summary": "Создать новый тип атрибута",
+        "description": "Создает новый тип атрибута с указанными параметрами",
+        "tags": ["AttributeTypes"],
+        "security": [{"Bearer": []}],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateAttributeTypeRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/attribute-types/{id}": {
+      "get": {
+        "summary": "Получить тип атрибута по ID",
+        "tags": ["AttributeTypes"],
+        "security": [{"Bearer": []}],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AttributeTypeResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "summary": "Обновить тип атрибута",
+        "tags": ["AttributeTypes"],
+        "security": [{"Bearer": []}],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateAttributeTypeRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": "No Content"
+          }
+        }
+      },
+      "delete": {
+        "summary": "Удалить тип атрибута",
+        "tags": ["AttributeTypes"],
+        "security": [{"Bearer": []}],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          }
+        }
+      }
+    },
+    "/attributes": {
+      "get": {
+        "summary": "Получить все атрибуты",
+        "tags": ["Attributes"],
+        "security": [{"Bearer": []}],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/AttributeResponse"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "summary": "Создать новый атрибут",
+        "tags": ["Attributes"],
+        "security": [{"Bearer": []}],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateAttributeRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/attribute-groups": {
+      "get": {
+        "summary": "Получить все группы атрибутов",
+        "tags": ["AttributeGroups"],
+        "security": [{"Bearer": []}],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/AttributeGroupResponse"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "summary": "Создать новую группу атрибутов",
+        "tags": ["AttributeGroups"],
+        "security": [{"Bearer": []}],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateAttributeGroupRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "Bearer": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT"
+      }
+    },
+    "schemas": {
+      "AttributeTypeResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "name": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "dataType": {
+            "type": "string"
+          }
+        }
+      },
+      "CreateAttributeTypeRequest": {
+        "type": "object",
+        "required": ["name", "dataType"],
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "dataType": {
+            "type": "string"
+          }
+        }
+      },
+      "UpdateAttributeTypeRequest": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "dataType": {
+            "type": "string"
+          }
+        }
+      },
+      "AttributeResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "name": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "attributeTypeId": {
+            "type": "string",
+            "format": "uuid"
+          }
+        }
+      },
+      "CreateAttributeRequest": {
+        "type": "object",
+        "required": ["name", "attributeTypeId"],
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "attributeTypeId": {
+            "type": "string",
+            "format": "uuid"
+          }
+        }
+      },
+      "AttributeGroupResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "name": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          }
+        }
+      },
+      "CreateAttributeGroupRequest": {
+        "type": "object",
+        "required": ["name"],
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  }
+}
