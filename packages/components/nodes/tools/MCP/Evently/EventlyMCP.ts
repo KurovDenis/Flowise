@@ -2,10 +2,9 @@ import { Tool } from '@langchain/core/tools'
 import { ICommonObject, INode, INodeData, INodeOptionsValue, INodeParams } from '../../../../src/Interface'
 import { getCredentialData, getCredentialParam } from '../../../../src/utils'
 import { MCPToolkit } from '../core'
-import { EventlyApiClient } from './core/EventlyApiClient'
-import { AuthManager } from './core/AuthManager'
 import { createCacheProvider } from './core/CacheProvider'
 import crypto from 'crypto'
+import path from 'path'
 
 class Evently_MCP implements INode {
     label: string
@@ -27,7 +26,8 @@ class Evently_MCP implements INode {
         this.type = 'Evently MCP Tool'
         this.icon = 'evently.svg'
         this.category = 'Tools (MCP)'
-        this.description = 'MCP Server for Evently AttributeValue API - provides access to AttributeTypes, Attributes, AttributeGroups, ObjectTypes, SystemObjects, MeasureUnits, and MeasureUnitGroups'
+        this.description =
+            'MCP Server for Evently AttributeValue API - provides access to AttributeTypes, Attributes, AttributeGroups, ObjectTypes, SystemObjects, MeasureUnits, and MeasureUnitGroups'
         this.documentation = 'https://github.com/evently/evently-mcp'
         this.credential = {
             label: 'Connect Credential',
@@ -96,9 +96,23 @@ class Evently_MCP implements INode {
     }
 
     async getTools(nodeData: INodeData, options: ICommonObject): Promise<Tool[]> {
-        const credentialData = await getCredentialData(nodeData.credential ?? '', options)
+        // Skip if no credential is selected
+        if (!nodeData.credential) {
+            return []
+        }
+
+        let credentialData = {}
+        try {
+            credentialData = await getCredentialData(nodeData.credential ?? '', options)
+        } catch (error) {
+            console.error('Error decrypting credential:', error)
+            // If credential decryption fails, return empty array
+            // This usually means the credential was created with wrong type or corrupted
+            throw new Error('Failed to decrypt Evently API credential. Please recreate the credential with type "eventlyApi".')
+        }
+
         const jwtToken = getCredentialParam('token', credentialData, nodeData)
-        const baseUrl = nodeData.inputs?.baseUrl as string || 'http://localhost:5000'
+        const baseUrl = (nodeData.inputs?.baseUrl as string) || 'http://localhost:5000'
 
         if (!jwtToken) {
             throw new Error('Missing Evently JWT Token')
@@ -117,16 +131,17 @@ class Evently_MCP implements INode {
         }
 
         try {
-            // Create SSE server configuration for MCP
+            // Create stdio server configuration for MCP
             const serverParams = {
-                url: `${baseUrl}/api/mcp/sse`,
-                headers: {
-                    'Authorization': `Bearer ${jwtToken}`,
-                    'Content-Type': 'application/json'
+                command: 'node',
+                args: [path.join(__dirname, 'server.js')],
+                env: {
+                    EVENTLY_API_URL: baseUrl,
+                    EVENTLY_JWT_TOKEN: jwtToken
                 }
             }
 
-            const toolkit = new MCPToolkit(serverParams, 'sse')
+            const toolkit = new MCPToolkit(serverParams, 'stdio')
             await toolkit.initialize()
 
             const tools = toolkit.tools ?? []

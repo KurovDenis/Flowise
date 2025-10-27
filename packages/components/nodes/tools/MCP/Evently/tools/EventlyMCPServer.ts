@@ -37,7 +37,9 @@ class EventlyMCPServer {
     private server: Server
     private apiClient: EventlyApiClient
 
-    constructor() {
+    constructor(apiClient: EventlyApiClient) {
+        this.apiClient = apiClient
+
         this.server = new Server(
             {
                 name: 'evently-mcp-server',
@@ -653,18 +655,6 @@ class EventlyMCPServer {
             const { name, arguments: args } = request.params
 
             try {
-                // Initialize API client if not already done
-                if (!this.apiClient) {
-                    const token = process.env.EVENTLY_JWT_TOKEN
-                    if (!token) {
-                        throw new Error('EVENTLY_JWT_TOKEN environment variable is required')
-                    }
-
-                    const authManager = new AuthManager(token)
-                    const baseUrl = process.env.EVENTLY_API_URL || 'http://localhost:5000'
-                    this.apiClient = new EventlyApiClient(baseUrl, authManager)
-                }
-
                 let result: any
 
                 switch (name) {
@@ -919,7 +909,17 @@ class EventlyMCPServer {
 
 // Start the server if this file is run directly
 if (require.main === module) {
-    const server = new EventlyMCPServer()
+    const token = process.env.EVENTLY_JWT_TOKEN
+    if (!token) {
+        console.error('EVENTLY_JWT_TOKEN environment variable is required')
+        process.exit(1)
+    }
+
+    const authManager = new AuthManager(token)
+    const baseUrl = process.env.EVENTLY_API_URL || 'http://localhost:5000'
+    const apiClient = new EventlyApiClient(baseUrl, authManager)
+
+    const server = new EventlyMCPServer(apiClient)
     server.run().catch(console.error)
 }
 
