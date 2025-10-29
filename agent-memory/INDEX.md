@@ -7,6 +7,7 @@ Navigation
 - [Generate Tools](./TOOLS_GENERATION.md)
 - [Build & Run](./BUILD_RUN.md)
 - [Credentials (JWT)](./CREDENTIALS_JWT.md)
+- [Authentication Flow](./AUTHENTICATION_FLOW.md) 🔐
 - [Create Chatflow](./CREATE_CHATFLOW.md)
 - [Versioning & Deploy](./VERSIONING_DEPLOY.md)
 - [Troubleshooting](./TROUBLESHOOTING.md)

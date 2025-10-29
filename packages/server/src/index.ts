@@ -10,6 +10,7 @@ import logger, { expressRequestLogger } from './utils/logger'
 import { getDataSource } from './DataSource'
 import { NodesPool } from './NodesPool'
 import { ChatFlow } from './database/entities/ChatFlow'
+import { Credential } from './database/entities/Credential'
 import { CachePool } from './CachePool'
 import { AbortControllerPool } from './AbortControllerPool'
 import { RateLimiterManager } from './utils/rateLimit'
@@ -35,6 +36,68 @@ import { Organization } from './enterprise/database/entities/organization.entity
 import { GeneralRole, Role } from './enterprise/database/entities/role.entity'
 import { migrateApiKeysFromJsonToDb } from './utils/apiKey'
 import { ExpressAdapter } from '@bull-board/express'
+import { AES } from 'crypto-js'
+
+/**
+ * Create default credentials on startup if they don't exist
+ */
+async function createDefaultCredentials(): Promise<void> {
+    try {
+        const appDataSource = getDataSource()
+        const CredentialRepository = appDataSource.getRepository(Credential)
+
+        // Check if Evently API credential exists
+        const existingEventlyCred = await CredentialRepository.findOne({
+            where: {
+                name: 'Evently API - Default',
+                credentialName: 'eventlyApi'
+            }
+        })
+
+        const EVENTLY_API_URL = (process.env.EVENTLY_API_URL || 'http://localhost:5000').trim()
+        const EVENTLY_JWT_TOKEN = (process.env.EVENTLY_JWT_TOKEN || '').trim()
+
+        if (!existingEventlyCred && EVENTLY_JWT_TOKEN) {
+            // Get encryption key
+            const encryptionKey = await getEncryptionKey()
+            if (!encryptionKey) {
+                logger.warn('⚠️  Encryption key not found, skipping Evently credential creation')
+                return
+            }
+
+            // Validate JWT format
+            const tokenParts = EVENTLY_JWT_TOKEN.split('.')
+            if (tokenParts.length !== 3) {
+                logger.warn('⚠️  Invalid JWT token format, skipping Evently credential creation')
+                return
+            }
+
+            logger.info('📝 Creating Evently API credential...')
+            logger.info(`   API URL: ${EVENTLY_API_URL}`)
+
+            // Encrypt credentials
+            const plainDataObj = {
+                apiUrl: EVENTLY_API_URL,
+                token: EVENTLY_JWT_TOKEN
+            }
+            const encryptedData = AES.encrypt(JSON.stringify(plainDataObj), encryptionKey).toString()
+
+            // Create credential
+            const newCredential = CredentialRepository.create({
+                name: 'Evently API - Default',
+                credentialName: 'eventlyApi',
+                encryptedData
+            })
+            await CredentialRepository.save(newCredential)
+
+            logger.info('✅ Evently API credential created successfully')
+        } else if (existingEventlyCred) {
+            logger.info('🔑 Evently API credential already exists')
+        }
+    } catch (error) {
+        logger.error('❌ Error creating default credentials:', error)
+    }
+}
 
 declare global {
     namespace Express {
@@ -87,6 +150,9 @@ export class App {
             // Run Migrations Scripts
             await this.AppDataSource.runMigrations({ transaction: 'each' })
             logger.info('🔄 [server]: Database migrations completed successfully')
+
+            // Create default credentials if they don't exist
+            await createDefaultCredentials()
 
             // Initialize Identity Manager
             this.identityManager = await IdentityManager.getInstance()

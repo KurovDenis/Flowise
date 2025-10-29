@@ -115,14 +115,16 @@ export class EventlyApiClient {
             async (error: AxiosError) => {
                 const config = error.config as any
 
-                // Initialize retry count
-                config.__retryCount = config.__retryCount || 0
+                // Initialize retry count if config exists
+                if (config) {
+                    config.__retryCount = config.__retryCount || 0
+                }
 
                 // Check if should retry
                 const shouldRetry = this.shouldRetry(error)
                 const maxRetries = 3
 
-                if (shouldRetry && config.__retryCount < maxRetries) {
+                if (shouldRetry && config && config.__retryCount < maxRetries) {
                     config.__retryCount++
 
                     // Exponential backoff: 1s, 2s, 4s
@@ -132,7 +134,19 @@ export class EventlyApiClient {
                     return this.axiosInstance(config)
                 }
 
-                return Promise.reject(error)
+                // Normalize error message before rejecting
+                let errorMessage: string
+                if (error.response) {
+                    const { status, data } = error.response
+                    const responseData = data as any
+                    errorMessage = `API Error ${status}: ${responseData?.detail || responseData?.message || 'Unknown error'}`
+                } else if (error.request) {
+                    errorMessage = 'Network error: Unable to reach Evently API'
+                } else {
+                    errorMessage = `Request error: ${error.message || 'Unknown error'}`
+                }
+
+                return Promise.reject(new Error(errorMessage))
             }
         )
     }
@@ -141,6 +155,7 @@ export class EventlyApiClient {
      * Determine if request should be retried
      */
     private shouldRetry(error: AxiosError): boolean {
+        // Don't retry if there's no config
         if (!error.config) return false
 
         // Retry on network errors
@@ -160,7 +175,7 @@ export class EventlyApiClient {
     }
 
     /**
-     * Setup request and response interceptors
+     * Setup request interceptors for authentication
      */
     private setupInterceptors(): void {
         // Request interceptor to add JWT token
@@ -169,28 +184,13 @@ export class EventlyApiClient {
                 try {
                     const token = await this.authManager.getToken()
                     config.headers.Authorization = `Bearer ${token}`
-                } catch (error) {
-                    throw new Error(`Authentication failed: ${error.message}`)
+                } catch (error: any) {
+                    const errorMessage = error?.message || 'Unknown authentication error'
+                    throw new Error(`Authentication failed: ${errorMessage}`)
                 }
                 return config
             },
             (error) => Promise.reject(error)
-        )
-
-        // Response interceptor for error handling
-        this.axiosInstance.interceptors.response.use(
-            (response) => response,
-            (error) => {
-                // Normalize error responses
-                if (error.response) {
-                    const { status, data } = error.response
-                    throw new Error(`API Error ${status}: ${data?.detail || data?.message || 'Unknown error'}`)
-                } else if (error.request) {
-                    throw new Error('Network error: Unable to reach Evently API')
-                } else {
-                    throw new Error(`Request error: ${error.message}`)
-                }
-            }
         )
     }
 

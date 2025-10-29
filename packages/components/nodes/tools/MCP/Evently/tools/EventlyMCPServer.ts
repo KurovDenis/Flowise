@@ -720,8 +720,12 @@ class EventlyMCPServer {
                     }
 
                     case 'update_attribute': {
+                        const id = (args as any).id
+                        if (!id) {
+                            throw new Error('ID is required for update_attribute')
+                        }
                         const updateAttrArgs = validateInput(UpdateAttributeInputSchema, args)
-                        result = await this.apiClient.put(`/attributes/${updateAttrArgs.id}`, updateAttrArgs)
+                        result = await this.apiClient.put(`/attributes/${id}`, updateAttrArgs)
                         break
                     }
 
@@ -768,8 +772,12 @@ class EventlyMCPServer {
                     }
 
                     case 'update_attribute_group': {
+                        const id = (args as any).id
+                        if (!id) {
+                            throw new Error('ID is required for update_attribute_group')
+                        }
                         const updateAttrGroupArgs = validateInput(UpdateAttributeGroupInputSchema, args)
-                        result = await this.apiClient.put(`/attribute-groups/${updateAttrGroupArgs.id}`, updateAttrGroupArgs)
+                        result = await this.apiClient.put(`/attribute-groups/${id}`, updateAttrGroupArgs)
                         break
                     }
 
@@ -861,9 +869,12 @@ class EventlyMCPServer {
                     }
 
                     case 'update_system_object': {
+                        const id = (args as any).id
+                        if (!id) {
+                            throw new Error('ID is required for update_system_object')
+                        }
                         const updateSystemObjectArgs = validateInput(UpdateSystemObjectInputSchema, args)
-                        const { id, ...updateData } = updateSystemObjectArgs
-                        result = await this.apiClient.put(`/system-objects/${id}`, updateData)
+                        result = await this.apiClient.put(`/system-objects/${id}`, updateSystemObjectArgs)
                         break
                     }
 
@@ -909,13 +920,21 @@ class EventlyMCPServer {
 
 // Start the server if this file is run directly
 if (require.main === module) {
-    const token = process.env.EVENTLY_JWT_TOKEN
-    if (!token) {
-        console.error('EVENTLY_JWT_TOKEN environment variable is required')
+    // Check for Keycloak credentials (new method)
+    const KEYCLOAK_TOKEN_URL = process.env.KEYCLOAK_TOKEN_URL
+    const KEYCLOAK_CLIENT_ID = process.env.KEYCLOAK_CLIENT_ID
+    const KEYCLOAK_CLIENT_SECRET = process.env.KEYCLOAK_CLIENT_SECRET
+    
+    if (!KEYCLOAK_TOKEN_URL || !KEYCLOAK_CLIENT_ID || !KEYCLOAK_CLIENT_SECRET) {
+        console.error('KEYCLOAK_TOKEN_URL, KEYCLOAK_CLIENT_ID, and KEYCLOAK_CLIENT_SECRET environment variables are required')
         process.exit(1)
     }
 
-    const authManager = new AuthManager(token)
+    const authManager = new AuthManager({
+        tokenUrl: KEYCLOAK_TOKEN_URL,
+        clientId: KEYCLOAK_CLIENT_ID,
+        clientSecret: KEYCLOAK_CLIENT_SECRET
+    })
     const baseUrl = process.env.EVENTLY_API_URL || 'http://localhost:5000'
     const apiClient = new EventlyApiClient(baseUrl, authManager)
 

@@ -4,52 +4,51 @@ import fs from 'fs'
 import path from 'path'
 import os from 'os'
 
-export class InitEventlyCredential1759500000000 implements MigrationInterface {
+export class MigrateToKeycloakCredential1760000000000 implements MigrationInterface {
     public async up(queryRunner: QueryRunner): Promise<void> {
         // Environment variables - trim to remove whitespace
         const EVENTLY_API_URL = (process.env.EVENTLY_API_URL || 'http://localhost:5000').trim()
-        const EVENTLY_JWT_TOKEN = (process.env.EVENTLY_JWT_TOKEN || '').trim()
+        const KEYCLOAK_TOKEN_URL = (process.env.KEYCLOAK_TOKEN_URL || 'http://evently.identity:8080/realms/evently/protocol/openid-connect/token').trim()
+        const KEYCLOAK_CLIENT_ID = (process.env.KEYCLOAK_CLIENT_ID || '').trim()
+        const KEYCLOAK_CLIENT_SECRET = (process.env.KEYCLOAK_CLIENT_SECRET || '').trim()
 
         const CREDENTIAL_NAME = 'Evently API - Default'
-        const CREDENTIAL_TYPE = 'eventlyApi'
+        const CREDENTIAL_TYPE = 'eventlyKeycloakApi'
 
         try {
             // Delete existing credential if it exists (always recreate)
             const existingCredential = await queryRunner.query(
-                `SELECT id FROM credential WHERE name = 'Evently API - Default' AND "credentialName" = 'eventlyApi'`
+                `SELECT id FROM credential WHERE name = '${CREDENTIAL_NAME}' AND "credentialName" = '${CREDENTIAL_TYPE}'`
             )
 
             if (existingCredential && existingCredential.length > 0) {
                 // eslint-disable-next-line no-console
-                console.log('🔄 Removing existing Evently API credential...')
+                console.log('🔄 Removing existing Evently Keycloak API credential...')
                 await queryRunner.query(
-                    `DELETE FROM credential WHERE name = 'Evently API - Default' AND "credentialName" = 'eventlyApi'`
+                    `DELETE FROM credential WHERE name = '${CREDENTIAL_NAME}' AND "credentialName" = '${CREDENTIAL_TYPE}'`
                 )
             }
 
-            if (!EVENTLY_JWT_TOKEN) {
+            if (!KEYCLOAK_CLIENT_ID || !KEYCLOAK_CLIENT_SECRET) {
                 // eslint-disable-next-line no-console
-                console.log('⚠️  EVENTLY_JWT_TOKEN not set, skipping credential creation')
-                return
-            }
-
-            // Validate JWT token format
-            const tokenParts = EVENTLY_JWT_TOKEN.split('.')
-            if (tokenParts.length !== 3) {
+                console.log('⚠️  KEYCLOAK_CLIENT_ID or KEYCLOAK_CLIENT_SECRET not set, skipping credential creation')
                 // eslint-disable-next-line no-console
-                console.error('❌ Invalid JWT token format. Expected: header.payload.signature')
-                console.error('   Token parts found:', tokenParts.length)
+                console.log('   KEYCLOAK_CLIENT_ID:', !!KEYCLOAK_CLIENT_ID)
+                // eslint-disable-next-line no-console
+                console.log('   KEYCLOAK_CLIENT_SECRET:', !!KEYCLOAK_CLIENT_SECRET)
                 return
             }
 
             // eslint-disable-next-line no-console
-            console.log('📝 Creating Evently API credential...')
+            console.log('📝 Creating Evently Keycloak API credential...')
             // eslint-disable-next-line no-console
             console.log('   API URL:', EVENTLY_API_URL)
             // eslint-disable-next-line no-console
-            console.log('   JWT Token length:', EVENTLY_JWT_TOKEN.length, 'chars')
+            console.log('   Keycloak Token URL:', KEYCLOAK_TOKEN_URL)
             // eslint-disable-next-line no-console
-            console.log('   JWT Token parts:', tokenParts.length)
+            console.log('   Client ID:', KEYCLOAK_CLIENT_ID)
+            // eslint-disable-next-line no-console
+            console.log('   Client Secret:', KEYCLOAK_CLIENT_SECRET ? '***' : 'not set')
 
             // Get encryption key
             const getEncryptionKey = (): string => {
@@ -86,7 +85,9 @@ export class InitEventlyCredential1759500000000 implements MigrationInterface {
             const encryptKey = getEncryptionKey()
             const plainDataObj = {
                 apiUrl: EVENTLY_API_URL,
-                token: EVENTLY_JWT_TOKEN
+                keycloakTokenUrl: KEYCLOAK_TOKEN_URL,
+                keycloakClientId: KEYCLOAK_CLIENT_ID,
+                keycloakClientSecret: KEYCLOAK_CLIENT_SECRET
             }
 
             const encryptedData = AES.encrypt(JSON.stringify(plainDataObj), encryptKey).toString()
@@ -98,16 +99,18 @@ export class InitEventlyCredential1759500000000 implements MigrationInterface {
             )
 
             // eslint-disable-next-line no-console
-            console.log('✅ Evently API credential created successfully')
+            console.log('✅ Evently Keycloak API credential created successfully')
+            // eslint-disable-next-line no-console
+            console.log('   This credential supports automatic token refresh')
         } catch (error) {
             // eslint-disable-next-line no-console
-            console.error('❌ Error creating Evently API credential:', error)
+            console.error('❌ Error creating Evently Keycloak API credential:', error)
             // Don't throw - allow migration to continue
         }
     }
 
     public async down(queryRunner: QueryRunner): Promise<void> {
-        // Remove Evently API credential if it exists
-        await queryRunner.query(`DELETE FROM credential WHERE name = 'Evently API - Default' AND "credentialName" = 'eventlyApi'`)
+        // Remove Evently Keycloak API credential if it exists
+        await queryRunner.query(`DELETE FROM credential WHERE name = 'Evently API - Default' AND "credentialName" = 'eventlyKeycloakApi'`)
     }
 }

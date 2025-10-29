@@ -19,22 +19,27 @@ The Evently MCP server provides secure and reliable access to Evently's Attribut
 ## Prerequisites
 
 1. **Evently API**: Running Evently API server accessible via HTTP
-2. **JWT Token**: Valid JWT token from KeyCloak with appropriate permissions
+2. **Keycloak Service Account**: Client ID and Client Secret from Keycloak with appropriate permissions
 3. **Flowise**: Flowise installation with MCP support
 
 ## Configuration
 
-### 1. Evently API Credentials
+### 1. Evently API Credentials (Keycloak)
 
-Create an Evently API credential in Flowise with:
-- **API URL**: Base URL of your Evently API (e.g., `http://localhost:5000`)
-- **JWT Token**: Your KeyCloak JWT token with Evently API permissions
+Create an **Evently API (Keycloak)** credential in Flowise with:
+- **API URL**: Base URL of your Evently API (e.g., `http://evently.api:8080`, without `/api` suffix)
+- **Keycloak Token URL**: Keycloak token endpoint (e.g., `http://evently.identity:8080/realms/evently/protocol/openid-connect/token`)
+- **Client ID**: Service Account client ID (e.g., `evently-confidential-client`)
+- **Client Secret**: Service Account client secret from Keycloak Admin Console
+
+**Note:** This credential type supports automatic token refresh. Tokens are obtained and refreshed automatically via OAuth2 Client Credentials Flow. No manual token management required!
 
 ### 2. MCP Node Configuration
 
 Configure the Evently MCP node with:
 - **Available Actions**: Select which tools to enable
 - **API Base URL**: Override the base URL if needed
+- **Connect Credential**: Select the "Evently API (Keycloak)" credential
 
 ## Available Tools
 

@@ -14,7 +14,7 @@ export const GetAttributeTypeInputSchema = z.object({
 
 export const CreateAttributeTypeInputSchema = z.object({
     name: z.string().min(1, 'Name is required').max(100, 'Name must be less than 100 characters'),
-    description: z.string().max(500, 'Description must be less than 500 characters').optional(),
+    description: z.string().min(1, 'Description is required').max(500, 'Description must be less than 500 characters'),
     dataType: z.string().min(1, 'Data type is required')
 })
 
@@ -43,25 +43,60 @@ export const GetAttributeInputSchema = z.object({
     id: z.string().uuid('Invalid UUID format for attribute ID')
 })
 
-export const CreateAttributeInputSchema = z.object({
-    name: z.string().min(1, 'Name is required').max(100, 'Name must be less than 100 characters'),
-    shortName: z.string().min(1, 'Short name is required').max(20, 'Short name must be less than 20 characters'),
-    code: z.string().min(1, 'Code is required').max(20, 'Code must be less than 20 characters'),
-    dataType: z.string().min(1, 'Data type is required'),
-    isComputed: z.boolean().default(false),
-    isSystemAttribute: z.boolean().default(false),
-    isMeasureAble: z.boolean().default(false),
-    isReadOnly: z.boolean().default(false),
-    formulaExpression: z.string().optional(),
-    enumerationId: z.string().uuid('Invalid UUID format for enumeration ID').optional(),
-    referenceAttributeId: z.string().uuid('Invalid UUID format for reference attribute ID').optional(),
-    targetAttributeId: z.string().uuid('Invalid UUID format for target attribute ID').optional()
-})
+export const CreateAttributeInputSchema = z
+    .object({
+        name: z.string().min(1, 'Name is required').max(100, 'Name must be less than 100 characters'),
+        shortName: z
+            .string()
+            .min(1, 'Short name is required')
+            .max(20, 'Short name must be less than 20 characters')
+            .regex(
+                /^[A-Z][A-Z0-9_]*$/,
+                'Short name must start with uppercase letter and contain only uppercase letters, numbers, and underscores'
+            ),
+        code: z
+            .string()
+            .min(1, 'Code is required')
+            .max(20, 'Code must be less than 20 characters')
+            .regex(
+                /^[A-Z][A-Z0-9_]*$/,
+                'Code must start with uppercase letter and contain only uppercase letters, numbers, and underscores'
+            ),
+        dataType: z.string().min(1, 'Data type is required'),
+        isComputed: z.boolean().default(false),
+        isSystemAttribute: z.boolean().default(false),
+        isMeasureAble: z.boolean().default(false),
+        isReadOnly: z.boolean().default(false),
+        formulaExpression: z.string().optional(),
+        enumerationId: z.string().uuid('Invalid UUID format for enumeration ID').optional(),
+        referenceAttributeId: z.string().uuid('Invalid UUID format for reference attribute ID').optional(),
+        targetAttributeId: z.string().uuid('Invalid UUID format for target attribute ID').optional()
+    })
+    .refine(
+        (data) => {
+            // If isComputed is true, formulaExpression is required
+            if (data.isComputed && !data.formulaExpression) {
+                return false
+            }
+            return true
+        },
+        {
+            message: 'Formula expression is required for computed attributes',
+            path: ['formulaExpression']
+        }
+    )
 
 export const UpdateAttributeInputSchema = z.object({
-    id: z.string().uuid('Invalid UUID format for attribute ID'),
     name: z.string().min(1, 'Name is required').max(100, 'Name must be less than 100 characters').optional(),
-    shortName: z.string().min(1, 'Short name is required').max(20, 'Short name must be less than 20 characters').optional(),
+    shortName: z
+        .string()
+        .min(1, 'Short name is required')
+        .max(20, 'Short name must be less than 20 characters')
+        .regex(
+            /^[A-Z][A-Z0-9_]*$/,
+            'Short name must start with uppercase letter and contain only uppercase letters, numbers, and underscores'
+        )
+        .optional(),
     formulaExpression: z.string().optional()
 })
 
@@ -86,13 +121,12 @@ export const GetAttributeGroupInputSchema = z.object({
 })
 
 export const CreateAttributeGroupInputSchema = z.object({
-    name: z.string().min(1, 'Name is required').max(100, 'Name must be less than 100 characters'),
-    description: z.string().max(500, 'Description must be less than 500 characters'),
+    name: z.string().min(1, 'Name is required').max(200, 'Name must be less than 200 characters'),
+    description: z.string().min(1, 'Description is required').max(500, 'Description must be less than 500 characters'),
     objectTypeCode: z.number().int().positive('Object type code must be greater than 0')
 })
 
 export const UpdateAttributeGroupInputSchema = z.object({
-    id: z.string().uuid('Invalid UUID format for attribute group ID'),
     name: z.string().min(1, 'Name is required').max(100, 'Name must be less than 100 characters').optional(),
     description: z.string().max(500, 'Description must be less than 500 characters').optional()
 })
@@ -142,22 +176,32 @@ export const GetSystemObjectInputSchema = z.object({
     id: z.string().uuid('Invalid UUID format for system object ID')
 })
 
-export const CreateSystemObjectInputSchema = z.object({
-    objectTypeCode: z.number().int().positive('Object type code must be greater than 0'),
-    schemeCode: z.string().uuid('Invalid UUID format for scheme code').optional(),
-    attributeValues: z
-        .array(
-            z.object({
-                attributeId: z.string().uuid('Invalid UUID format for attribute ID'),
-                value: z.any(), // Can be string, number, boolean, etc.
-                isComputed: z.boolean().default(false)
-            })
-        )
-        .min(1, 'At least one attribute value is required')
-})
+export const CreateSystemObjectInputSchema = z
+    .object({
+        objectTypeCode: z.number().int().positive('Object type code must be greater than 0'),
+        schemeCode: z.string().uuid('Invalid UUID format for scheme code').optional(),
+        attributeValues: z
+            .array(
+                z.object({
+                    attributeId: z.string().uuid('Invalid UUID format for attribute ID'),
+                    value: z.any(), // Can be string, number, boolean, etc.
+                    isComputed: z.boolean().default(false)
+                })
+            )
+            .min(1, 'At least one attribute value is required')
+    })
+    .refine(
+        (data) => {
+            // Value cannot be null for non-computed attributes
+            return data.attributeValues.every((av) => av.isComputed || av.value != null)
+        },
+        {
+            message: 'Value cannot be null for non-computed attributes',
+            path: ['attributeValues']
+        }
+    )
 
 export const UpdateSystemObjectInputSchema = z.object({
-    id: z.string().uuid('Invalid UUID format for system object ID'),
     attributeValueUpdates: z
         .array(
             z.object({

@@ -91,3 +91,4 @@ evently.flowise:
 - `flowise-fork/scripts/setup-service-account.md`
 - ag-ui_docs/EVENTLY_INTEGRATION_README.md
 - ag-ui_docs/EVENTLY_TOOLS_QUICKSTART.md
+- [Detailed Authentication Flow](./AUTHENTICATION_FLOW.md)

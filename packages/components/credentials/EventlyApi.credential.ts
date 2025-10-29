@@ -27,8 +27,9 @@ class EventlyApi implements INodeCredential {
                 name: 'token',
                 type: 'password',
                 // Allows non-interactive setup via EVENTLY_API_TOKEN in docker-compose
-                default: process.env.EVENTLY_API_TOKEN || '',
-                description: 'JWT token from Keycloak (можно прокинуть через EVENTLY_API_TOKEN)'
+                default: process.env.EVENTLY_API_TOKEN?.trim() || '',
+                description: 'JWT token from Keycloak (можно прокинуть через EVENTLY_API_TOKEN)',
+                placeholder: 'eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9...'
             }
         ]
     }
