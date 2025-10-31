@@ -11,6 +11,7 @@ import {
     UpdateAttributeTypeInputSchema,
     DeleteAttributeTypeInputSchema,
     GetAttributesInputSchema,
+    GetAttributeByCodeInputSchema,
     GetAttributeInputSchema,
     CreateAttributeInputSchema,
     UpdateAttributeInputSchema,
@@ -179,6 +180,21 @@ class EventlyMCPServer {
                                     default: 10
                                 }
                             }
+                        }
+                    },
+                    {
+                        name: 'get_attribute_by_code',
+                        description: 'Get a specific attribute by its unique code',
+                        inputSchema: {
+                            type: 'object',
+                            properties: {
+                                code: {
+                                    type: 'string',
+                                    description:
+                                        'Attribute code (must start with uppercase and contain only uppercase letters, numbers, and underscores; max 20)'
+                                }
+                            },
+                            required: ['code']
                         }
                     },
                     {
@@ -713,6 +729,12 @@ class EventlyMCPServer {
                         break
                     }
 
+                    case 'get_attribute_by_code': {
+                        const getAttrByCodeArgs = validateInput(GetAttributeByCodeInputSchema, args)
+                        result = await this.apiClient.get(`/attributes/by-code/${getAttrByCodeArgs.code}`)
+                        break
+                    }
+
                     case 'create_attribute': {
                         const createAttrArgs = validateInput(CreateAttributeInputSchema, args)
                         result = await this.apiClient.post('/attributes', createAttrArgs)
@@ -924,7 +946,6 @@ if (require.main === module) {
     const KEYCLOAK_TOKEN_URL = process.env.KEYCLOAK_TOKEN_URL
     const KEYCLOAK_CLIENT_ID = process.env.KEYCLOAK_CLIENT_ID
     const KEYCLOAK_CLIENT_SECRET = process.env.KEYCLOAK_CLIENT_SECRET
-    
     if (!KEYCLOAK_TOKEN_URL || !KEYCLOAK_CLIENT_ID || !KEYCLOAK_CLIENT_SECRET) {
         console.error('KEYCLOAK_TOKEN_URL, KEYCLOAK_CLIENT_ID, and KEYCLOAK_CLIENT_SECRET environment variables are required')
         process.exit(1)

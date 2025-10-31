@@ -39,6 +39,17 @@ export const GetAttributesInputSchema = z.object({
     pageSize: z.number().int().positive().max(100).default(10)
 })
 
+export const GetAttributeByCodeInputSchema = z.object({
+    code: z
+        .string()
+        .min(1, 'Code is required')
+        .max(20, 'Code must be less than or equal to 20 characters')
+        .regex(
+            /^[A-Z][A-Z0-9_]*$/,
+            'Code must start with uppercase letter and contain only uppercase letters, numbers, and underscores'
+        )
+})
+
 export const GetAttributeInputSchema = z.object({
     id: z.string().uuid('Invalid UUID format for attribute ID')
 })

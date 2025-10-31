@@ -483,9 +483,11 @@ public async Task<ClaimsPrincipal> TransformAsync(ClaimsPrincipal principal)
 
 ---
 
-### Вариант 2: Service Accounts как Virtual Users 🎯 **РЕКОМЕНДУЕТСЯ**
+### Вариант 2: Service Accounts как Virtual Users 🎯 **РЕКОМЕНДУЕТСЯ** ✅ РЕАЛИЗОВАНО
 
 **Идея:** Создавать "виртуальных" пользователей в БД для service accounts с гибким управлением правами.
+
+**Статус:** ✅ Реализовано в миграциях `AddIsServiceAccountToUsers` и `AddMcpAttributeValueAgentRole`
 
 #### Архитектура
 
@@ -498,7 +500,7 @@ public async Task<ClaimsPrincipal> TransformAsync(ClaimsPrincipal principal)
 │ first_name                                                   │
 │ last_name                                                    │
 │ identity_id (uuid) ← Keycloak service account ID            │
-│ is_service_account (boolean) ← НОВОЕ ПОЛЕ                  │
+│ is_service_account (boolean) ← ✅ ДОБАВЛЕНО В МИГРАЦИИ     │
 │ created_at                                                   │
 └─────────────────────────────────────────────────────────────┘
          ↓ (JOIN)
@@ -506,57 +508,88 @@ public async Task<ClaimsPrincipal> TransformAsync(ClaimsPrincipal principal)
 │ users.user_roles                                            │
 ├─────────────────────────────────────────────────────────────┤
 │ user_id → users.users.id                                    │
-│ role_id → users.roles.id                                    │
+│ role_name → users.roles.name                                │
 └─────────────────────────────────────────────────────────────┘
          ↓ (JOIN)
 ┌─────────────────────────────────────────────────────────────┐
 │ users.roles                                                 │
 ├─────────────────────────────────────────────────────────────┤
-│ id                                                           │
-│ name (e.g., "mcp-agent-attributes-readonly")                │
-│ permissions (JSON array)                                     │
+│ name ← PRIMARY KEY                                          │
+│                                                              │
+│ ✅ НОВАЯ РОЛЬ: MCP-Agent-AttributeValue-Full-Access         │
+└─────────────────────────────────────────────────────────────┘
+         ↓ (JOIN)
+┌─────────────────────────────────────────────────────────────┐
+│ users.role_permissions                                      │
+├─────────────────────────────────────────────────────────────┤
+│ role_name → users.roles.name                               │
+│ permission_code → users.permissions.code                   │
+│                                                              │
+│ ✅ 26 permissions для AttributeValue модуля                 │
 └─────────────────────────────────────────────────────────────┘
 ```
 
 #### Реализация
 
-**Шаг 1: Миграция БД - добавить поле `is_service_account`**
+✅ **Миграции уже созданы и применены:**
+
+- `20251029180500_AddIsServiceAccountToUsers.cs` - добавляет поле `is_service_account` и индекс
+- `20251029180600_AddMcpAttributeValueAgentRole.cs` - создает роль `MCP-Agent-AttributeValue-Full-Access` с 26 permissions
+
+**Шаг 1: Миграция БД - добавить поле `is_service_account`** ✅ ВЫПОЛНЕНО
+
+См. миграцию: `src/Modules/Users/Evently.Modules.Users.Infrastructure/Database/Migrations/20251029180500_AddIsServiceAccountToUsers.cs`
 
 ```sql
--- Миграция: AddIsServiceAccountColumn
+-- Миграция: AddIsServiceAccountColumn (УЖЕ ПРИМЕНЕНА)
 ALTER TABLE users.users 
 ADD COLUMN is_service_account BOOLEAN NOT NULL DEFAULT FALSE;
 
 CREATE INDEX idx_users_is_service_account ON users.users(is_service_account);
 ```
 
-**Шаг 2: Создать специализированные роли для агентов**
+**Шаг 2: Создать специализированную роль для MCP AttributeValue Agent** ✅ ВЫПОЛНЕНО
+
+См. миграцию: `src/Modules/Users/Evently.Modules.Users.Infrastructure/Database/Migrations/20251029180600_AddMcpAttributeValueAgentRole.cs`
 
 ```sql
--- Роль для агентов работающих только с атрибутами
-INSERT INTO users.roles (id, name, permissions) 
-VALUES (
-    'a1b2c3d4-...',
-    'mcp-agent-attributes-readonly',
-    '["attributes:read"]'::jsonb
-);
+-- Роль для MCP AttributeValue Agent с полными правами модуля AttributeValue
+INSERT INTO users.roles (name) 
+VALUES ('MCP-Agent-AttributeValue-Full-Access');
 
--- Роль для агентов работающих с событиями
-INSERT INTO users.roles (id, name, permissions) 
-VALUES (
-    'a1b2c3d5-...',
-    'mcp-agent-events-manager',
-    '["events:read", "events:create", "events:update"]'::jsonb
-);
-
--- Роль для полного доступа
-INSERT INTO users.roles (id, name, permissions) 
-VALUES (
-    'a1b2c3d6-...',
-    'mcp-agent-admin',
-    '["users:read", "users:manage", "events:read", "events:create", "events:update", "events:delete", "tickets:read", "tickets:create", "tickets:update", "tickets:delete", "attributes:read", "attributes:create", "attributes:update", "attributes:delete"]'::jsonb
-);
+-- 26 permissions для всех операций модуля AttributeValue
+INSERT INTO users.role_permissions (role_name, permission_code) VALUES
+    ('MCP-Agent-AttributeValue-Full-Access', 'attributevalue:attributes:read'),
+    ('MCP-Agent-AttributeValue-Full-Access', 'attributevalue:attributes:create'),
+    ('MCP-Agent-AttributeValue-Full-Access', 'attributevalue:attributes:update'),
+    ('MCP-Agent-AttributeValue-Full-Access', 'attributevalue:attributes:delete'),
+    ('MCP-Agent-AttributeValue-Full-Access', 'attributevalue:attribute-groups:read'),
+    ('MCP-Agent-AttributeValue-Full-Access', 'attributevalue:attribute-groups:create'),
+    ('MCP-Agent-AttributeValue-Full-Access', 'attributevalue:attribute-groups:update'),
+    ('MCP-Agent-AttributeValue-Full-Access', 'attributevalue:attribute-groups:delete'),
+    ('MCP-Agent-AttributeValue-Full-Access', 'attributevalue:object-types:read'),
+    ('MCP-Agent-AttributeValue-Full-Access', 'attributevalue:object-types:update'),
+    ('MCP-Agent-AttributeValue-Full-Access', 'attributevalue:object-types:schemes:manage'),
+    ('MCP-Agent-AttributeValue-Full-Access', 'attributevalue:object-types:attributes:manage'),
+    ('MCP-Agent-AttributeValue-Full-Access', 'attributevalue:attribute-types:read'),
+    ('MCP-Agent-AttributeValue-Full-Access', 'attributevalue:attribute-types:create'),
+    ('MCP-Agent-AttributeValue-Full-Access', 'attributevalue:attribute-types:update'),
+    ('MCP-Agent-AttributeValue-Full-Access', 'attributevalue:attribute-types:delete'),
+    ('MCP-Agent-AttributeValue-Full-Access', 'attributevalue:system-objects:read'),
+    ('MCP-Agent-AttributeValue-Full-Access', 'attributevalue:system-objects:create'),
+    ('MCP-Agent-AttributeValue-Full-Access', 'attributevalue:system-objects:update'),
+    ('MCP-Agent-AttributeValue-Full-Access', 'attributevalue:system-objects:delete'),
+    ('MCP-Agent-AttributeValue-Full-Access', 'attributevalue:measure-unit-groups:read'),
+    ('MCP-Agent-AttributeValue-Full-Access', 'attributevalue:measure-unit-groups:create'),
+    ('MCP-Agent-AttributeValue-Full-Access', 'attributevalue:measure-unit-groups:update'),
+    ('MCP-Agent-AttributeValue-Full-Access', 'attributevalue:measure-unit-groups:delete'),
+    ('MCP-Agent-AttributeValue-Full-Access', 'attributevalue:measure-units:read'),
+    ('MCP-Agent-AttributeValue-Full-Access', 'attributevalue:measure-units:create'),
+    ('MCP-Agent-AttributeValue-Full-Access', 'attributevalue:measure-units:update'),
+    ('MCP-Agent-AttributeValue-Full-Access', 'attributevalue:measure-units:delete');
 ```
+
+**Примечание:** Роль включает все 26 permissions модуля AttributeValue для полного доступа ко всем операциям (attributes, attribute-groups, object-types, attribute-types, system-objects, measure-units, measure-unit-groups).
 
 **Шаг 3: Скрипт создания service account пользователя**
 
@@ -901,19 +934,20 @@ public async Task<ClaimsPrincipal> TransformAsync(ClaimsPrincipal principal)
 
 ---
 
-### Фаза 2: Production-Ready Authorization (Рекомендуется) - 3-5 дней
+### Фаза 2: Production-Ready Authorization (Рекомендуется) - 3-5 дней ✅ ЧАСТИЧНО ВЫПОЛНЕНО
 
 **Цель:** Гибкое управление правами для агентов
 
-**Вариант 2A: Virtual Users (если предпочитаете управление через БД)**
+**Вариант 2A: Virtual Users (если предпочитаете управление через БД)** ✅ В РАБОТЕ
 
-**День 1: Миграция БД**
-- [ ] Создать миграцию `AddIsServiceAccountColumn`
-- [ ] Создать специализированные роли для агентов:
-  - `mcp-agent-attributes-readonly`
-  - `mcp-agent-events-manager`
-  - `mcp-agent-admin`
-- [ ] Протестировать миграцию на dev БД
+**День 1: Миграция БД** ✅ ВЫПОЛНЕНО
+- [x] Создать миграцию `AddIsServiceAccountColumn` ✅ ВЫПОЛНЕНО
+- [x] Создать роль для MCP AttributeValue Agent:
+  - `MCP-Agent-AttributeValue-Full-Access` (26 permissions) ✅ ВЫПОЛНЕНО
+- [x] Протестировать миграцию на dev БД ✅ ВЫПОЛНЕНО
+- [ ] Добавить дополнительные роли при необходимости:
+  - `mcp-agent-events-manager` (опционально)
+  - `mcp-agent-admin` (опционально)
 
 **День 2: Скрипты**
 - [ ] Создать `scripts/create-service-account-user.ps1`
