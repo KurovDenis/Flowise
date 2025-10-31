@@ -76,11 +76,13 @@ await toolkit.initialize()
 4. ✅ `get_attribute` - получение конкретного атрибута
 5. ✅ `get_attribute_groups` - получение всех групп атрибутов
 6. ✅ `get_attribute_group` - получение конкретной группы атрибутов
-7. ✅ `get_object_types` - получение всех типов объектов
-8. ✅ `get_object_type` - получение конкретного типа объекта
-9. ✅ `get_system_objects` - получение всех системных объектов
-10. ✅ `get_system_object` - получение конкретного системного объекта
-11. ✅ + дополнительные команды (create, update, delete)
+7. ✅ `get_enumerations` - получение всех перечислений с фильтрацией
+8. ✅ `get_enumeration` - получение конкретного перечисления со значениями
+9. ✅ `get_object_types` - получение всех типов объектов
+10. ✅ `get_object_type` - получение конкретного типа объекта
+11. ✅ `get_system_objects` - получение всех системных объектов
+12. ✅ `get_system_object` - получение конкретного системного объекта
+13. ✅ + дополнительные команды (create, update, delete)
 
 **Статус:** ✅ ГОТОВО (production-ready)
 
@@ -322,6 +324,10 @@ node server.js
 **Attribute Groups:**
 - ✅ get_attribute_groups
 - ✅ get_attribute_group
+
+**Enumerations:**
+- ✅ get_enumerations
+- ✅ get_enumeration
 
 **Object Types:**
 - ✅ get_object_types

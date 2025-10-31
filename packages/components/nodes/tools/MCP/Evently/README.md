@@ -65,6 +65,11 @@ Configure the Evently MCP node with:
 - `update_attribute_group` - Update existing attribute group
 - `delete_attribute_group` - Delete attribute group
 
+### Enumerations
+- `get_enumerations` - Retrieve all enumerations
+- `get_enumeration` - Get specific enumeration by ID
+- `create_enumeration` - Create new enumeration with optional values
+
 ## Example Agent Workflows
 
 ### 1. Retrieve All Attribute Types

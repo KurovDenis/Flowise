@@ -31,7 +31,10 @@ import {
     GetSystemObjectInputSchema,
     CreateSystemObjectInputSchema,
     UpdateSystemObjectInputSchema,
-    DeleteSystemObjectInputSchema
+    DeleteSystemObjectInputSchema,
+    GetEnumerationsInputSchema,
+    GetEnumerationInputSchema,
+    CreateEnumerationInputSchema
 } from '../types/validation'
 
 class EventlyMCPServer {
@@ -431,6 +434,84 @@ class EventlyMCPServer {
                             required: ['id']
                         }
                     },
+                    // Enumerations tools
+                    {
+                        name: 'get_enumerations',
+                        description: 'Get all enumerations from Evently API with filtering and pagination',
+                        inputSchema: {
+                            type: 'object',
+                            properties: {
+                                searchTerm: {
+                                    type: 'string',
+                                    description: 'Search by enumeration name or description'
+                                },
+                                page: {
+                                    type: 'number',
+                                    description: 'Page number (starting from 1)',
+                                    default: 1
+                                },
+                                pageSize: {
+                                    type: 'number',
+                                    description: 'Page size (maximum 100)',
+                                    default: 10
+                                }
+                            }
+                        }
+                    },
+                    {
+                        name: 'get_enumeration',
+                        description: 'Get a specific enumeration by ID with all its values',
+                        inputSchema: {
+                            type: 'object',
+                            properties: {
+                                id: {
+                                    type: 'string',
+                                    description: 'UUID of the enumeration'
+                                }
+                            },
+                            required: ['id']
+                        }
+                    },
+                    {
+                        name: 'create_enumeration',
+                        description: 'Create a new enumeration with optional values',
+                        inputSchema: {
+                            type: 'object',
+                            properties: {
+                                name: {
+                                    type: 'string',
+                                    description: 'Name of the enumeration (max 200 characters)'
+                                },
+                                description: {
+                                    type: 'string',
+                                    description: 'Description of the enumeration (max 500 characters)'
+                                },
+                                values: {
+                                    type: 'array',
+                                    description: 'Optional array of enumeration values',
+                                    items: {
+                                        type: 'object',
+                                        properties: {
+                                            name: {
+                                                type: 'string',
+                                                description: 'Name of the enumeration value (max 200 characters)'
+                                            },
+                                            description: {
+                                                type: 'string',
+                                                description: 'Description of the enumeration value (max 500 characters)'
+                                            },
+                                            order: {
+                                                type: 'number',
+                                                description: 'Order index (must be non-negative)'
+                                            }
+                                        },
+                                        required: ['name', 'order']
+                                    }
+                                }
+                            },
+                            required: ['name']
+                        }
+                    },
                     // ObjectTypes tools
                     {
                         name: 'get_object_types',
@@ -807,6 +888,34 @@ class EventlyMCPServer {
                         const deleteAttrGroupArgs = validateInput(DeleteAttributeGroupInputSchema, args)
                         await this.apiClient.delete(`/attribute-groups/${deleteAttrGroupArgs.id}`)
                         result = { success: true, message: 'Attribute group deleted' }
+                        break
+                    }
+
+                    // Enumerations
+                    case 'get_enumerations': {
+                        const getEnumerationsArgs = validateInput(GetEnumerationsInputSchema, args)
+                        const queryParams = new URLSearchParams()
+
+                        if (getEnumerationsArgs.searchTerm) {
+                            queryParams.append('searchTerm', getEnumerationsArgs.searchTerm)
+                        }
+                        queryParams.append('page', (getEnumerationsArgs.page ?? 1).toString())
+                        queryParams.append('pageSize', (getEnumerationsArgs.pageSize ?? 10).toString())
+
+                        const queryString = queryParams.toString()
+                        result = await this.apiClient.get(`/enumerations${queryString ? `?${queryString}` : ''}`)
+                        break
+                    }
+
+                    case 'get_enumeration': {
+                        const getEnumerationArgs = validateInput(GetEnumerationInputSchema, args)
+                        result = await this.apiClient.get(`/enumerations/${getEnumerationArgs.id}`)
+                        break
+                    }
+
+                    case 'create_enumeration': {
+                        const createEnumerationArgs = validateInput(CreateEnumerationInputSchema, args)
+                        result = await this.apiClient.post('/enumerations', createEnumerationArgs)
                         break
                     }
 
