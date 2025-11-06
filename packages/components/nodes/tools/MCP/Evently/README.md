@@ -222,6 +222,53 @@ const logs = observability.getRecentLogs(100, 'error')
 console.log(logs)
 ```
 
+## Backward Compatibility
+
+### Status: ✅ Maintained
+
+This monolithic Evently MCP server remains fully functional and will continue to be supported during and after the migration to modular MCP servers. The server provides all tools in a single process, making it suitable for agents that require access to all domains.
+
+### Migration to Modular Servers
+
+**New modular architecture available:** The Evently MCP functionality has been split into four independent domain servers:
+
+- **Evently.Attributes** - 17 attribute-related tools
+- **Evently.Enumerations** - 8 enumeration-related tools  
+- **Evently.Objects** - 10 object-related tools
+- **Evently.Measures** - 10 measure-related tools
+
+**Benefits of modular servers:**
+- Reduced memory footprint (30-40% reduction when using single domain)
+- Independent deployment and versioning
+- Granular access control per agent role
+- Faster development cycles per domain
+
+**Migration guide:** See [MIGRATION_GUIDE.md](../../../../../../specs/001-mcp-modularization/MIGRATION_GUIDE.md) for detailed migration instructions.
+
+### Tool Name Compatibility
+
+All tool names remain identical between the monolithic and modular servers. This ensures:
+- ✅ Zero code changes required for agent migration
+- ✅ Same tool contracts and input/output schemas
+- ✅ Seamless transition between architectures
+- ✅ Both architectures can coexist during migration
+
+### Coexistence Strategy
+
+Both monolithic and modular servers can run simultaneously:
+- Agents can be configured with either architecture
+- Tool conflict resolution: first configured server wins (handled by Flowise)
+- No breaking changes to existing agent configurations
+- Gradual migration supported
+
+### Deprecation Notice
+
+**Current status:** This monolithic server is **actively maintained** and will remain available for the foreseeable future.
+
+**Future considerations:** While no deprecation date is set, we recommend new agents use the modular architecture for better performance and maintainability. Existing agents can continue using this server without any changes.
+
+---
+
 ## Roadmap
 
 ### ✅ Completed (v1.0)

@@ -1,0 +1,9 @@
+node_modules/
+dist/
+build/
+coverage/
+*.min.js
+*.min.ts
+packages/server/.env
+packages/ui/.env
+

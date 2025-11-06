@@ -34,7 +34,13 @@ import {
     DeleteSystemObjectInputSchema,
     GetEnumerationsInputSchema,
     GetEnumerationInputSchema,
-    CreateEnumerationInputSchema
+    CreateEnumerationInputSchema,
+    UpdateEnumerationInputSchema,
+    AddEnumerationValueInputSchema,
+    UpdateEnumerationValueInputSchema,
+    DeleteEnumerationValueInputSchema,
+    BatchDeleteEnumerationValuesInputSchema,
+    DeleteEnumerationInputSchema
 } from '../types/validation'
 
 class EventlyMCPServer {
@@ -512,6 +518,137 @@ class EventlyMCPServer {
                             required: ['name']
                         }
                     },
+                    {
+                        name: 'update_enumeration',
+                        description: 'Update the name and description of an existing enumeration',
+                        inputSchema: {
+                            type: 'object',
+                            properties: {
+                                id: {
+                                    type: 'string',
+                                    description: 'UUID of the enumeration to update'
+                                },
+                                name: {
+                                    type: 'string',
+                                    description: 'New name of the enumeration (max 200 characters, must be unique)'
+                                },
+                                description: {
+                                    type: 'string',
+                                    description: 'New description of the enumeration (max 500 characters, optional)'
+                                }
+                            },
+                            required: ['id', 'name']
+                        }
+                    },
+                    {
+                        name: 'add_enumeration_value',
+                        description: 'Add a new value to an existing enumeration',
+                        inputSchema: {
+                            type: 'object',
+                            properties: {
+                                enumerationId: {
+                                    type: 'string',
+                                    description: 'UUID of the enumeration'
+                                },
+                                name: {
+                                    type: 'string',
+                                    description: 'Name of the enumeration value (max 200 characters, must be unique within enumeration)'
+                                },
+                                description: {
+                                    type: 'string',
+                                    description: 'Description of the enumeration value (max 500 characters, optional)'
+                                },
+                                order: {
+                                    type: 'number',
+                                    description: 'Display order (non-negative integer, auto-assigned if not provided)'
+                                }
+                            },
+                            required: ['enumerationId', 'name']
+                        }
+                    },
+                    {
+                        name: 'update_enumeration_value',
+                        description: 'Update the name, description, and order of an enumeration value',
+                        inputSchema: {
+                            type: 'object',
+                            properties: {
+                                enumerationId: {
+                                    type: 'string',
+                                    description: 'UUID of the enumeration'
+                                },
+                                valueId: {
+                                    type: 'string',
+                                    description: 'UUID of the enumeration value to update'
+                                },
+                                name: {
+                                    type: 'string',
+                                    description: 'New name of the enumeration value (max 200 characters, must be unique within enumeration)'
+                                },
+                                description: {
+                                    type: 'string',
+                                    description: 'New description of the enumeration value (max 500 characters, optional)'
+                                },
+                                order: {
+                                    type: 'number',
+                                    description: 'New display order (non-negative integer, conflicts auto-adjusted)'
+                                }
+                            },
+                            required: ['enumerationId', 'valueId', 'name', 'order']
+                        }
+                    },
+                    {
+                        name: 'delete_enumeration_value',
+                        description: 'Delete an enumeration value if it is not used in any attribute values',
+                        inputSchema: {
+                            type: 'object',
+                            properties: {
+                                enumerationId: {
+                                    type: 'string',
+                                    description: 'UUID of the enumeration'
+                                },
+                                valueId: {
+                                    type: 'string',
+                                    description: 'UUID of the enumeration value to delete'
+                                }
+                            },
+                            required: ['enumerationId', 'valueId']
+                        }
+                    },
+                    {
+                        name: 'batch_delete_enumeration_values',
+                        description: 'Delete multiple enumeration values in a single operation (supports partial success)',
+                        inputSchema: {
+                            type: 'object',
+                            properties: {
+                                enumerationId: {
+                                    type: 'string',
+                                    description: 'UUID of the enumeration'
+                                },
+                                valueIds: {
+                                    type: 'array',
+                                    description: 'Array of enumeration value IDs to delete',
+                                    items: {
+                                        type: 'string'
+                                    }
+                                }
+                            },
+                            required: ['enumerationId', 'valueIds']
+                        }
+                    },
+                    {
+                        name: 'delete_enumeration',
+                        description: 'Delete an enumeration if it is not referenced by any attributes',
+                        inputSchema: {
+                            type: 'object',
+                            properties: {
+                                id: {
+                                    type: 'string',
+                                    description: 'UUID of the enumeration to delete'
+                                }
+                            },
+                            required: ['id']
+                        }
+                    },
                     // ObjectTypes tools
                     {
                         name: 'get_object_types',
@@ -916,6 +1053,48 @@ class EventlyMCPServer {
                     case 'create_enumeration': {
                         const createEnumerationArgs = validateInput(CreateEnumerationInputSchema, args)
                         result = await this.apiClient.post('/enumerations', createEnumerationArgs)
+                        break
+                    }
+
+                    case 'update_enumeration': {
+                        const updateEnumerationArgs = validateInput(UpdateEnumerationInputSchema, args)
+                        const { id, ...updateData } = updateEnumerationArgs
+                        result = await this.apiClient.put(`/enumerations/${id}`, updateData)
+                        break
+                    }
+
+                    case 'add_enumeration_value': {
+                        const addEnumerationValueArgs = validateInput(AddEnumerationValueInputSchema, args)
+                        const { enumerationId, ...valueData } = addEnumerationValueArgs
+                        result = await this.apiClient.post(`/enumerations/${enumerationId}/values`, valueData)
+                        break
+                    }
+
+                    case 'update_enumeration_value': {
+                        const updateEnumerationValueArgs = validateInput(UpdateEnumerationValueInputSchema, args)
+                        const { enumerationId, valueId, ...updateData } = updateEnumerationValueArgs
+                        result = await this.apiClient.put(`/enumerations/${enumerationId}/values/${valueId}`, updateData)
+                        break
+                    }
+
+                    case 'delete_enumeration_value': {
+                        const deleteEnumerationValueArgs = validateInput(DeleteEnumerationValueInputSchema, args)
+                        result = await this.apiClient.delete(
+                            `/enumerations/${deleteEnumerationValueArgs.enumerationId}/values/${deleteEnumerationValueArgs.valueId}`
+                        )
+                        break
+                    }
+
+                    case 'batch_delete_enumeration_values': {
+                        const batchDeleteArgs = validateInput(BatchDeleteEnumerationValuesInputSchema, args)
+                        const { enumerationId, valueIds } = batchDeleteArgs
+                        result = await this.apiClient.post(`/enumerations/${enumerationId}/values/batch-delete`, { valueIds })
+                        break
+                    }
+
+                    case 'delete_enumeration': {
+                        const deleteEnumerationArgs = validateInput(DeleteEnumerationInputSchema, args)
+                        result = await this.apiClient.delete(`/enumerations/${deleteEnumerationArgs.id}`)
                         break
                     }
 
