@@ -46,7 +46,7 @@ class Evently_Measures_MCP implements INode {
                 label: 'API Base URL',
                 name: 'baseUrl',
                 type: 'string',
-                default: 'http://localhost:5000',
+                default: process.env.EVENTLY_API_URL || 'http://localhost:5000',
                 description: 'Base URL of the Evently API (without /api suffix)'
             }
         ]
@@ -116,7 +116,7 @@ class Evently_Measures_MCP implements INode {
         const keycloakClientSecret = getCredentialParam('keycloakClientSecret', credentialData, nodeData)
         const keycloakTokenUrl = getCredentialParam('keycloakTokenUrl', credentialData, nodeData)
         const apiUrl = getCredentialParam('apiUrl', credentialData, nodeData)
-        const baseUrl = ((nodeData.inputs?.baseUrl as string) || apiUrl || 'http://localhost:5000').trim()
+        const baseUrl = ((nodeData.inputs?.baseUrl as string) || apiUrl || process.env.EVENTLY_API_URL || 'http://localhost:5000').trim()
 
         if (!keycloakClientId || !keycloakClientSecret) {
             throw new Error('Keycloak credentials are required. Please configure the Evently API (Keycloak) credential.')
