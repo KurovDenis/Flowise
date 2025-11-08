@@ -1,0 +1,165 @@
+{
+  "name": "Enumerations Agent",
+  "type": "MULTIAGENT",
+  "category": "Evently",
+  "description": "AI agent for managing enumerations in Evently system via MCP tools",
+  "flowData": {
+    "nodes": [
+      {
+        "id": "startAgentflow_0",
+        "type": "agentFlow",
+        "position": {
+          "x": -43,
+          "y": 67.5
+        },
+        "data": {
+          "id": "startAgentflow_0",
+          "label": "Start",
+          "version": 1.1,
+          "name": "startAgentflow",
+          "type": "Start",
+          "color": "#7EE787",
+          "hideInput": true,
+          "baseClasses": ["Start"],
+          "category": "Agent Flows",
+          "description": "Starting point of the agentflow",
+          "inputParams": [
+            {
+              "label": "Input Type",
+              "name": "startInputType",
+              "type": "options",
+              "options": [
+                {
+                  "label": "Chat Input",
+                  "name": "chatInput",
+                  "description": "Start the conversation with chat input"
+                },
+                {
+                  "label": "Form Input",
+                  "name": "formInput",
+                  "description": "Start the workflow with form inputs"
+                }
+              ],
+              "default": "chatInput"
+            },
+            {
+              "label": "Ephemeral Memory",
+              "name": "startEphemeralMemory",
+              "type": "boolean",
+              "description": "Start fresh for every execution without past chat history",
+              "optional": true
+            }
+          ],
+          "inputAnchors": [],
+          "inputs": {
+            "startInputType": "chatInput",
+            "startEphemeralMemory": "",
+            "startState": "",
+            "startPersistState": ""
+          },
+          "outputAnchors": [
+            {
+              "id": "startAgentflow_0-output-startAgentflow",
+              "label": "Start",
+              "name": "startAgentflow"
+            }
+          ],
+          "outputs": {}
+        }
+      },
+      {
+        "id": "agentAgentflow_0",
+        "position": {
+          "x": 111.5,
+          "y": -88.5
+        },
+        "data": {
+          "id": "agentAgentflow_0",
+          "label": "Enumerations Agent",
+          "version": 2.2,
+          "name": "agentAgentflow",
+          "type": "Agent",
+          "color": "#4DD0E1",
+          "baseClasses": ["Agent"],
+          "category": "Agent Flows",
+          "description": "Dynamically choose and utilize tools during runtime, enabling multi-step reasoning",
+          "inputAnchors": [],
+          "inputs": {
+            "agentModel": "chatOpenRouter",
+            "agentMessages": [
+              {
+                "role": "system",
+                "content": "# Инструкции для агента: Полное управление перечислениями через MCP Evently\n\n## Назначение\n\nРуководство для AI-агента, использующего MCP Evently для полного управления перечислениями (enumerations) и их значениями.\n\n## Требования и доступ\n\n- Требуются права:\n  - `attributevalue:enumerations:read` — чтение перечислений\n  - `attributevalue:enumerations:manage` — создание/изменение/удаление перечислений и значений\n- Аутентификация: через Keycloak (конфигурируется в узле MCP Enumerations в Flowise)\n\n## Обзор MCP-инструментов (8)\n\n- Перечисления:\n  - `get_enumerations` — список с фильтрацией и пагинацией\n  - `get_enumeration` — получение по ID (со значениями)\n  - `create_enumeration` — создание (со значениями или пустое)\n  - `update_enumeration` — обновление name/description\n  - `delete_enumeration` — удаление (с проверкой зависимостей)\n- Значения перечисления:\n  - `add_enumeration_value` — добавление значения\n  - `update_enumeration_value` — обновление значения (name/description/order)\n  - `delete_enumeration_value` — удаление значения\n\n## Общие правила и ограничения\n\n- Уникальность:\n  - Имя перечисления — уникально в системе\n  - Имя значения — уникально в рамках одного перечисления\n- Порядок (`order`):\n  - Целое число >= 0; допускаются «дыры» (1, 3, 5)\n  - При добавлении, если не указан — назначается автоматически как max+1\n  - При обновлении — конфликты порядка автоматически разрешаются\n- Зависимости и удаление:\n  - Перечисление нельзя удалить, если оно используется атрибутами\n  - Значение нельзя удалить, если оно используется в `attribute_values`\n  - При удалении последнего значения перечисление удаляется автоматически\n- Формат и валидация: name (1..200), description (<=500), UUID — валидный\n\n## Рекомендации по взаимодействию\n\n- Отвечайте на русском для русских запросов, на английском для английских\n- Будьте кратким и ясным\n- При успешных операциях подтверждайте что было сделано\n- При ошибках объясняйте проблему и предлагайте решения\n- Для списков используйте маркированные списки или таблицы\n- ПЕРЕД удалением всегда:\n  1. Используйте get_enumeration для проверки деталей\n  2. Если используется или системное, объясните почему нельзя удалить\n  3. Если удаление возможно, попросите подтверждение\n  4. Дождитесь явного подтверждения (\"да\", \"подтверждаю\", \"удали\")\n  5. Только после подтверждения выполняйте удаление\n\n## Примеры диалогов\n\n**Создание перечисления:**\nПользователь: \"создай перечисление Места изготовления\"\nВы: \"Какие значения должны быть в перечислении 'Места изготовления'? Укажите названия и порядок (например: РХМ - 1, ВСП - 2)\"\n\nПользователь: \"значения: РХМ - 1, ВСП - 2\"\nВы: *вызываете create_enumeration*\n\"✅ Создано перечисление 'Места изготовления' с ID [id].\nЗначения:\n- РХМ (порядок: 1)\n- ВСП (порядок: 2)\"\n\n**Удаление с подтверждением:**\nПользователь: \"удали перечисление [id]\"\nВы: *вызываете get_enumeration*\n*проверяете использование*\nЕсли используется: \"❌ Перечисление '[name]' используется в [N] местах и не может быть удалено.\"\nЕсли не используется: \"⚠️ Вы уверены, что хотите удалить перечисление '[name]'? Это действие необратимо. Подтвердите, написав 'да' или 'подтверждаю'.\"\n\nПользователь: \"да\"\nВы: *вызываете delete_enumeration*\n\"✅ Перечисление '[name]' успешно удалено.\""
+              }
+            ],
+            "agentTools": [
+              {
+                "agentSelectedTool": "eventlyEnumerationsMCP",
+                "agentSelectedToolRequiresHumanInput": "",
+                "agentSelectedToolConfig": {
+                  "credential": "",
+                  "mcpActions": "[\"add_enumeration_value\",\"create_enumeration\",\"delete_enumeration\",\"delete_enumeration_value\",\"get_enumeration\",\"get_enumerations\",\"update_enumeration\",\"update_enumeration_value\"]",
+                  "baseUrl": "http://evently.api:8080",
+                  "agentSelectedTool": "eventlyEnumerationsMCP"
+                }
+              }
+            ],
+            "agentKnowledgeDocumentStores": [],
+            "agentKnowledgeVSEmbeddings": "",
+            "agentEnableMemory": true,
+            "agentMemoryType": "allMessages",
+            "agentUserMessage": "",
+            "agentReturnResponseAs": "userMessage",
+            "agentUpdateState": "",
+            "agentModelConfig": {
+              "cache": "",
+              "modelName": "google/gemini-2.0-flash-001",
+              "temperature": "0.3",
+              "streaming": true,
+              "maxTokens": "",
+              "topP": "",
+              "frequencyPenalty": "",
+              "presencePenalty": "",
+              "timeout": "",
+              "basepath": "https://openrouter.ai/api/v1",
+              "baseOptions": "",
+              "agentModel": "chatOpenRouter"
+            }
+          },
+          "outputAnchors": [
+            {
+              "id": "agentAgentflow_0-output-agentAgentflow",
+              "label": "Agent",
+              "name": "agentAgentflow"
+            }
+          ],
+          "outputs": {}
+        },
+        "type": "agentFlow"
+      }
+    ],
+    "edges": [
+      {
+        "source": "startAgentflow_0",
+        "sourceHandle": "startAgentflow_0-output-startAgentflow",
+        "target": "agentAgentflow_0",
+        "targetHandle": "agentAgentflow_0",
+        "data": {
+          "sourceColor": "#7EE787",
+          "targetColor": "#4DD0E1",
+          "isHumanInput": false
+        },
+        "type": "agentFlow",
+        "id": "startAgentflow_0-startAgentflow_0-output-startAgentflow-agentAgentflow_0-agentAgentflow_0"
+      }
+    ]
+  },
+  "deployed": true,
+  "isPublic": false,
+  "chatbotConfig": null,
+  "apiConfig": null,
+  "analytic": null,
+  "speechToText": null,
+  "textToSpeech": null,
+  "followUpPrompts": null
+}
