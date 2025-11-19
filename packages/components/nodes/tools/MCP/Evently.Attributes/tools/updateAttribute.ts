@@ -10,6 +10,6 @@ export async function updateAttribute(args: { apiClient: EventlyApiClient; id: s
     }
     // Remove id from body as it's in the URL
     const { id: _, ...body } = validatedArgs
-    return await apiClient.put(`/attributes/${id}`, body)
+    return await apiClient.put(`/attributevalue/attributes/${id}`, body)
 }
 

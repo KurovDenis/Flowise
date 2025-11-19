@@ -5,6 +5,6 @@ export async function addEnumerationValue(args: { apiClient: EventlyApiClient; e
     const { apiClient, ...restArgs } = args
     const validatedArgs = validateInput(AddEnumerationValueInputSchema, restArgs)
     const { enumerationId, ...valueData } = validatedArgs
-    return await apiClient.post(`/enumerations/${enumerationId}/values`, valueData)
+    return await apiClient.post(`/attributevalue/enumerations/${enumerationId}/values`, valueData)
 }
 

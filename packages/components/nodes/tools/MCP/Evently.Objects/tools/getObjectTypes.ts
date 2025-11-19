@@ -13,6 +13,6 @@ export async function getObjectTypes(args: { apiClient: EventlyApiClient; typeKi
     queryParams.append('pageSize', (validatedArgs.pageSize ?? 10).toString())
 
     const queryString = queryParams.toString()
-    return await apiClient.get(`/object-types${queryString ? `?${queryString}` : ''}`)
+    return await apiClient.get(`/attributevalue/object-types${queryString ? `?${queryString}` : ''}`)
 }
 

@@ -4,7 +4,7 @@ import { DeleteAttributeInputSchema } from '../schemas/attributeSchemas'
 export async function deleteAttribute(args: { apiClient: EventlyApiClient; id: string }): Promise<any> {
     const { apiClient, ...restArgs } = args
     const validatedArgs = validateInput(DeleteAttributeInputSchema, restArgs)
-    await apiClient.delete(`/attributes/${validatedArgs.id}`)
+    await apiClient.delete(`/attributevalue/attributes/${validatedArgs.id}`)
     return { success: true, message: 'Attribute deleted' }
 }
 

@@ -9,6 +9,6 @@ export async function getMeasureUnits(args: { apiClient: EventlyApiClient; group
     if (validatedArgs.groupId) queryParams.append('groupId', validatedArgs.groupId)
 
     const queryString = queryParams.toString()
-    return await apiClient.get(`/measure-units${queryString ? `?${queryString}` : ''}`)
+    return await apiClient.get(`/attributevalue/measure-units${queryString ? `?${queryString}` : ''}`)
 }
 

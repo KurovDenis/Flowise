@@ -5,6 +5,6 @@ export async function updateSystemObject(args: { apiClient: EventlyApiClient; id
     const { apiClient, ...restArgs } = args
     const validatedArgs = validateInput(UpdateSystemObjectInputSchema, restArgs)
     const { id, ...updateData } = validatedArgs
-    return await apiClient.put(`/system-objects/${id}`, updateData)
+    return await apiClient.put(`/attributevalue/system-objects/${id}`, updateData)
 }
 

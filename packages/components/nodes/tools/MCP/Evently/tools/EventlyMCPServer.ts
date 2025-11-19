@@ -895,30 +895,30 @@ class EventlyMCPServer {
                     // AttributeTypes
                     case 'get_attribute_types':
                         validateInput(GetAttributeTypesInputSchema, args)
-                        result = await this.apiClient.get('/attribute-types')
+                        result = await this.apiClient.get('/attributevalue/attribute-types')
                         break
 
                     case 'get_attribute_type': {
                         const getAttrTypeArgs = validateInput(GetAttributeTypeInputSchema, args)
-                        result = await this.apiClient.get(`/attribute-types/${getAttrTypeArgs.id}`)
+                        result = await this.apiClient.get(`/attributevalue/attribute-types/${getAttrTypeArgs.id}`)
                         break
                     }
 
                     case 'create_attribute_type': {
                         const createAttrTypeArgs = validateInput(CreateAttributeTypeInputSchema, args)
-                        result = await this.apiClient.post('/attribute-types', createAttrTypeArgs)
+                        result = await this.apiClient.post('/attributevalue/attribute-types', createAttrTypeArgs)
                         break
                     }
 
                     case 'update_attribute_type': {
                         const updateAttrTypeArgs = validateInput(UpdateAttributeTypeInputSchema, args)
-                        result = await this.apiClient.put(`/attribute-types/${updateAttrTypeArgs.id}`, updateAttrTypeArgs)
+                        result = await this.apiClient.put(`/attributevalue/attribute-types/${updateAttrTypeArgs.id}`, updateAttrTypeArgs)
                         break
                     }
 
                     case 'delete_attribute_type': {
                         const deleteAttrTypeArgs = validateInput(DeleteAttributeTypeInputSchema, args)
-                        await this.apiClient.delete(`/attribute-types/${deleteAttrTypeArgs.id}`)
+                        await this.apiClient.delete(`/attributevalue/attribute-types/${deleteAttrTypeArgs.id}`)
                         result = { success: true, message: 'Attribute type deleted' }
                         break
                     }
@@ -937,25 +937,25 @@ class EventlyMCPServer {
                         queryParams.append('pageSize', (getAttrsArgs.pageSize ?? 10).toString())
 
                         const queryString = queryParams.toString()
-                        result = await this.apiClient.get(`/attributes${queryString ? `?${queryString}` : ''}`)
+                        result = await this.apiClient.get(`/attributevalue/attributes${queryString ? `?${queryString}` : ''}`)
                         break
                     }
 
                     case 'get_attribute': {
                         const getAttrArgs = validateInput(GetAttributeInputSchema, args)
-                        result = await this.apiClient.get(`/attributes/${getAttrArgs.id}`)
+                        result = await this.apiClient.get(`/attributevalue/attributes/${getAttrArgs.id}`)
                         break
                     }
 
                     case 'get_attribute_by_code': {
                         const getAttrByCodeArgs = validateInput(GetAttributeByCodeInputSchema, args)
-                        result = await this.apiClient.get(`/attributes/by-code/${getAttrByCodeArgs.code}`)
+                        result = await this.apiClient.get(`/attributevalue/attributes/by-code/${getAttrByCodeArgs.code}`)
                         break
                     }
 
                     case 'create_attribute': {
                         const createAttrArgs = validateInput(CreateAttributeInputSchema, args)
-                        result = await this.apiClient.post('/attributes', createAttrArgs)
+                        result = await this.apiClient.post('/attributevalue/attributes', createAttrArgs)
                         break
                     }
 
@@ -965,20 +965,20 @@ class EventlyMCPServer {
                             throw new Error('ID is required for update_attribute')
                         }
                         const updateAttrArgs = validateInput(UpdateAttributeInputSchema, args)
-                        result = await this.apiClient.put(`/attributes/${id}`, updateAttrArgs)
+                        result = await this.apiClient.put(`/attributevalue/attributes/${id}`, updateAttrArgs)
                         break
                     }
 
                     case 'delete_attribute': {
                         const deleteAttrArgs = validateInput(DeleteAttributeInputSchema, args)
-                        await this.apiClient.delete(`/attributes/${deleteAttrArgs.id}`)
+                        await this.apiClient.delete(`/attributevalue/attributes/${deleteAttrArgs.id}`)
                         result = { success: true, message: 'Attribute deleted' }
                         break
                     }
 
                     case 'get_attribute_short_names': {
                         const shortNamesArgs = validateInput(GetAttributeShortNamesInputSchema, args)
-                        result = await this.apiClient.post('/attributes/short-names', { ids: shortNamesArgs.ids })
+                        result = await this.apiClient.post('/attributevalue/attributes/short-names', { ids: shortNamesArgs.ids })
                         break
                     }
 
@@ -995,19 +995,19 @@ class EventlyMCPServer {
                         queryParams.append('pageSize', (getAttrGroupsArgs.pageSize ?? 10).toString())
 
                         const queryString = queryParams.toString()
-                        result = await this.apiClient.get(`/attribute-groups${queryString ? `?${queryString}` : ''}`)
+                        result = await this.apiClient.get(`/attributevalue/attribute-groups${queryString ? `?${queryString}` : ''}`)
                         break
                     }
 
                     case 'get_attribute_group': {
                         const getAttrGroupArgs = validateInput(GetAttributeGroupInputSchema, args)
-                        result = await this.apiClient.get(`/attribute-groups/${getAttrGroupArgs.id}`)
+                        result = await this.apiClient.get(`/attributevalue/attribute-groups/${getAttrGroupArgs.id}`)
                         break
                     }
 
                     case 'create_attribute_group': {
                         const createAttrGroupArgs = validateInput(CreateAttributeGroupInputSchema, args)
-                        result = await this.apiClient.post('/attribute-groups', createAttrGroupArgs)
+                        result = await this.apiClient.post('/attributevalue/attribute-groups', createAttrGroupArgs)
                         break
                     }
 
@@ -1017,13 +1017,13 @@ class EventlyMCPServer {
                             throw new Error('ID is required for update_attribute_group')
                         }
                         const updateAttrGroupArgs = validateInput(UpdateAttributeGroupInputSchema, args)
-                        result = await this.apiClient.put(`/attribute-groups/${id}`, updateAttrGroupArgs)
+                        result = await this.apiClient.put(`/attributevalue/attribute-groups/${id}`, updateAttrGroupArgs)
                         break
                     }
 
                     case 'delete_attribute_group': {
                         const deleteAttrGroupArgs = validateInput(DeleteAttributeGroupInputSchema, args)
-                        await this.apiClient.delete(`/attribute-groups/${deleteAttrGroupArgs.id}`)
+                        await this.apiClient.delete(`/attributevalue/attribute-groups/${deleteAttrGroupArgs.id}`)
                         result = { success: true, message: 'Attribute group deleted' }
                         break
                     }
@@ -1040,47 +1040,47 @@ class EventlyMCPServer {
                         queryParams.append('pageSize', (getEnumerationsArgs.pageSize ?? 10).toString())
 
                         const queryString = queryParams.toString()
-                        result = await this.apiClient.get(`/enumerations${queryString ? `?${queryString}` : ''}`)
+                        result = await this.apiClient.get(`/attributevalue/enumerations${queryString ? `?${queryString}` : ''}`)
                         break
                     }
 
                     case 'get_enumeration': {
                         const getEnumerationArgs = validateInput(GetEnumerationInputSchema, args)
-                        result = await this.apiClient.get(`/enumerations/${getEnumerationArgs.id}`)
+                        result = await this.apiClient.get(`/attributevalue/enumerations/${getEnumerationArgs.id}`)
                         break
                     }
 
                     case 'create_enumeration': {
                         const createEnumerationArgs = validateInput(CreateEnumerationInputSchema, args)
-                        result = await this.apiClient.post('/enumerations', createEnumerationArgs)
+                        result = await this.apiClient.post('/attributevalue/enumerations', createEnumerationArgs)
                         break
                     }
 
                     case 'update_enumeration': {
                         const updateEnumerationArgs = validateInput(UpdateEnumerationInputSchema, args)
                         const { id, ...updateData } = updateEnumerationArgs
-                        result = await this.apiClient.put(`/enumerations/${id}`, updateData)
+                        result = await this.apiClient.put(`/attributevalue/enumerations/${id}`, updateData)
                         break
                     }
 
                     case 'add_enumeration_value': {
                         const addEnumerationValueArgs = validateInput(AddEnumerationValueInputSchema, args)
                         const { enumerationId, ...valueData } = addEnumerationValueArgs
-                        result = await this.apiClient.post(`/enumerations/${enumerationId}/values`, valueData)
+                        result = await this.apiClient.post(`/attributevalue/enumerations/${enumerationId}/values`, valueData)
                         break
                     }
 
                     case 'update_enumeration_value': {
                         const updateEnumerationValueArgs = validateInput(UpdateEnumerationValueInputSchema, args)
                         const { enumerationId, valueId, ...updateData } = updateEnumerationValueArgs
-                        result = await this.apiClient.put(`/enumerations/${enumerationId}/values/${valueId}`, updateData)
+                        result = await this.apiClient.put(`/attributevalue/enumerations/${enumerationId}/values/${valueId}`, updateData)
                         break
                     }
 
                     case 'delete_enumeration_value': {
                         const deleteEnumerationValueArgs = validateInput(DeleteEnumerationValueInputSchema, args)
                         result = await this.apiClient.delete(
-                            `/enumerations/${deleteEnumerationValueArgs.enumerationId}/values/${deleteEnumerationValueArgs.valueId}`
+                            `/attributevalue/enumerations/${deleteEnumerationValueArgs.enumerationId}/values/${deleteEnumerationValueArgs.valueId}`
                         )
                         break
                     }
@@ -1088,13 +1088,15 @@ class EventlyMCPServer {
                     case 'batch_delete_enumeration_values': {
                         const batchDeleteArgs = validateInput(BatchDeleteEnumerationValuesInputSchema, args)
                         const { enumerationId, valueIds } = batchDeleteArgs
-                        result = await this.apiClient.post(`/enumerations/${enumerationId}/values/batch-delete`, { valueIds })
+                        result = await this.apiClient.post(`/attributevalue/enumerations/${enumerationId}/values/batch-delete`, {
+                            valueIds
+                        })
                         break
                     }
 
                     case 'delete_enumeration': {
                         const deleteEnumerationArgs = validateInput(DeleteEnumerationInputSchema, args)
-                        result = await this.apiClient.delete(`/enumerations/${deleteEnumerationArgs.id}`)
+                        result = await this.apiClient.delete(`/attributevalue/enumerations/${deleteEnumerationArgs.id}`)
                         break
                     }
 
@@ -1112,33 +1114,35 @@ class EventlyMCPServer {
                         queryParams.append('pageSize', (getObjectTypesArgs.pageSize ?? 10).toString())
 
                         const queryString = queryParams.toString()
-                        result = await this.apiClient.get(`/object-types${queryString ? `?${queryString}` : ''}`)
+                        result = await this.apiClient.get(`/attributevalue/object-types${queryString ? `?${queryString}` : ''}`)
                         break
                     }
 
                     case 'get_object_type': {
                         const getObjectTypeArgs = validateInput(GetObjectTypeInputSchema, args)
-                        result = await this.apiClient.get(`/object-types/${getObjectTypeArgs.objectTypeCode}`)
+                        result = await this.apiClient.get(`/attributevalue/object-types/${getObjectTypeArgs.objectTypeCode}`)
                         break
                     }
 
                     case 'update_object_type': {
                         const updateObjectTypeArgs = validateInput(UpdateObjectTypeInputSchema, args)
                         const { objectTypeCode, ...updateData } = updateObjectTypeArgs
-                        result = await this.apiClient.put(`/object-types/${objectTypeCode}`, updateData)
+                        result = await this.apiClient.put(`/attributevalue/object-types/${objectTypeCode}`, updateData)
                         break
                     }
 
                     case 'get_required_attributes': {
                         const getRequiredAttrsArgs = validateInput(GetRequiredAttributesInputSchema, args)
-                        result = await this.apiClient.get(`/object-types/${getRequiredAttrsArgs.objectTypeCode}/required-attributes`)
+                        result = await this.apiClient.get(
+                            `/attributevalue/object-types/${getRequiredAttrsArgs.objectTypeCode}/required-attributes`
+                        )
                         break
                     }
 
                     case 'remove_attribute_from_object_type': {
                         const removeAttrArgs = validateInput(RemoveAttributeFromObjectTypeInputSchema, args)
                         await this.apiClient.delete(
-                            `/object-types/${removeAttrArgs.objectTypeCode}/attributes/${removeAttrArgs.attributeId}`
+                            `/attributevalue/object-types/${removeAttrArgs.objectTypeCode}/attributes/${removeAttrArgs.attributeId}`
                         )
                         result = { success: true, message: 'Attribute removed from object type' }
                         break
@@ -1162,19 +1166,19 @@ class EventlyMCPServer {
                         queryParams.append('pageSize', (getSystemObjectsArgs.pageSize ?? 10).toString())
 
                         const queryString = queryParams.toString()
-                        result = await this.apiClient.get(`/system-objects${queryString ? `?${queryString}` : ''}`)
+                        result = await this.apiClient.get(`/attributevalue/system-objects${queryString ? `?${queryString}` : ''}`)
                         break
                     }
 
                     case 'get_system_object': {
                         const getSystemObjectArgs = validateInput(GetSystemObjectInputSchema, args)
-                        result = await this.apiClient.get(`/system-objects/${getSystemObjectArgs.id}`)
+                        result = await this.apiClient.get(`/attributevalue/system-objects/${getSystemObjectArgs.id}`)
                         break
                     }
 
                     case 'create_system_object': {
                         const createSystemObjectArgs = validateInput(CreateSystemObjectInputSchema, args)
-                        result = await this.apiClient.post('/system-objects', createSystemObjectArgs)
+                        result = await this.apiClient.post('/attributevalue/system-objects', createSystemObjectArgs)
                         break
                     }
 
@@ -1184,13 +1188,13 @@ class EventlyMCPServer {
                             throw new Error('ID is required for update_system_object')
                         }
                         const updateSystemObjectArgs = validateInput(UpdateSystemObjectInputSchema, args)
-                        result = await this.apiClient.put(`/system-objects/${id}`, updateSystemObjectArgs)
+                        result = await this.apiClient.put(`/attributevalue/system-objects/${id}`, updateSystemObjectArgs)
                         break
                     }
 
                     case 'delete_system_object': {
                         const deleteSystemObjectArgs = validateInput(DeleteSystemObjectInputSchema, args)
-                        await this.apiClient.delete(`/system-objects/${deleteSystemObjectArgs.id}`)
+                        await this.apiClient.delete(`/attributevalue/system-objects/${deleteSystemObjectArgs.id}`)
                         result = { success: true, message: 'System object deleted' }
                         break
                     }

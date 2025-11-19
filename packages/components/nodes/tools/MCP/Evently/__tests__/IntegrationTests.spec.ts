@@ -63,7 +63,7 @@ describe('Evently MCP Integration Tests', () => {
             }
 
             const validatedInput = validateInput(CreateAttributeTypeInputSchema, input)
-            const result = await apiClient.post('/attribute-types', validatedInput)
+            const result = await apiClient.post('/attributevalue/attribute-types', validatedInput)
             
             expect(result).toBeDefined()
             expect(result.id).toBeDefined()
@@ -71,13 +71,13 @@ describe('Evently MCP Integration Tests', () => {
         })
 
         it.skip('should get all attribute types via API', async () => {
-            const result = await apiClient.get('/attribute-types')
+            const result = await apiClient.get('/attributevalue/attribute-types')
             expect(Array.isArray(result)).toBe(true)
         })
 
         it.skip('should delete created attribute type via API', async () => {
             if (createdAttributeTypeId) {
-                await apiClient.delete(`/attribute-types/${createdAttributeTypeId}`)
+                await apiClient.delete(`/attributevalue/attribute-types/${createdAttributeTypeId}`)
             }
         })
     })
@@ -123,7 +123,7 @@ describe('Evently MCP Integration Tests', () => {
         it('should handle rate limiting correctly', async () => {
             // Create multiple concurrent requests
             const requests = Array.from({ length: 15 }, (_, i) => 
-                apiClient.get('/attribute-types').catch(() => null)
+                apiClient.get('/attributevalue/attribute-types').catch(() => null)
             )
 
             // Should complete without throwing rate limit errors
@@ -142,7 +142,7 @@ describe('Evently MCP Integration Tests', () => {
         it('should normalize API error responses', async () => {
             try {
                 // Attempt to get non-existent resource
-                await apiClient.get('/attribute-types/00000000-0000-0000-0000-000000000000')
+                await apiClient.get('/attributevalue/attribute-types/00000000-0000-0000-0000-000000000000')
             } catch (error) {
                 expect(error.message).toContain('API Error')
             }
@@ -153,7 +153,7 @@ describe('Evently MCP Integration Tests', () => {
             const badClient = new EventlyApiClient(baseUrl, badAuthManager)
             
             try {
-                await badClient.get('/attribute-types')
+                await badClient.get('/attributevalue/attribute-types')
             } catch (error) {
                 expect(error).toBeDefined()
             }

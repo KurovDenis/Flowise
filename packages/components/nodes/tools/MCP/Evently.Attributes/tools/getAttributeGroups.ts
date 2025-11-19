@@ -14,6 +14,6 @@ export async function getAttributeGroups(args: { apiClient: EventlyApiClient; ob
     queryParams.append('pageSize', (validatedArgs.pageSize ?? 10).toString())
 
     const queryString = queryParams.toString()
-    return await apiClient.get(`/attribute-groups${queryString ? `?${queryString}` : ''}`)
+    return await apiClient.get(`/attributevalue/attribute-groups${queryString ? `?${queryString}` : ''}`)
 }
 

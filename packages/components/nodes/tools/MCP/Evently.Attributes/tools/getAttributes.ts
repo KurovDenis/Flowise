@@ -15,6 +15,6 @@ export async function getAttributes(args: { apiClient: EventlyApiClient; searchT
     queryParams.append('pageSize', (validatedArgs.pageSize ?? 10).toString())
 
     const queryString = queryParams.toString()
-    return await apiClient.get(`/attributes${queryString ? `?${queryString}` : ''}`)
+    return await apiClient.get(`/attributevalue/attributes${queryString ? `?${queryString}` : ''}`)
 }
 

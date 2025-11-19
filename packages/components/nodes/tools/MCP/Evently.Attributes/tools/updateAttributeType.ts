@@ -7,6 +7,6 @@ export async function updateAttributeType(args: { apiClient: EventlyApiClient; i
     const id = validatedArgs.id
     // Remove id from body as it's in the URL
     const { id: _, ...body } = validatedArgs
-    return await apiClient.put(`/attribute-types/${id}`, body)
+    return await apiClient.put(`/attributevalue/attribute-types/${id}`, body)
 }
 

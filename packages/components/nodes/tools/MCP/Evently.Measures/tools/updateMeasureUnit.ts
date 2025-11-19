@@ -5,6 +5,6 @@ export async function updateMeasureUnit(args: { apiClient: EventlyApiClient; id:
     const { apiClient, ...restArgs } = args
     const validatedArgs = validateInput(UpdateMeasureUnitInputSchema, restArgs)
     const { id, ...updateData } = validatedArgs
-    return await apiClient.put(`/measure-units/${id}`, updateData)
+    return await apiClient.put(`/attributevalue/measure-units/${id}`, updateData)
 }
 

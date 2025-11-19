@@ -11,6 +11,6 @@ export async function getEnumerations(args: { apiClient: EventlyApiClient; searc
     queryParams.append('pageSize', (validatedArgs.pageSize ?? 10).toString())
 
     const queryString = queryParams.toString()
-    return await apiClient.get(`/enumerations${queryString ? `?${queryString}` : ''}`)
+    return await apiClient.get(`/attributevalue/enumerations${queryString ? `?${queryString}` : ''}`)
 }
 

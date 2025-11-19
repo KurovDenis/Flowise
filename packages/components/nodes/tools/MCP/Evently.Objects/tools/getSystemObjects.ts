@@ -13,6 +13,6 @@ export async function getSystemObjects(args: { apiClient: EventlyApiClient; obje
     queryParams.append('pageSize', (validatedArgs.pageSize ?? 10).toString())
 
     const queryString = queryParams.toString()
-    return await apiClient.get(`/system-objects${queryString ? `?${queryString}` : ''}`)
+    return await apiClient.get(`/attributevalue/system-objects${queryString ? `?${queryString}` : ''}`)
 }
 

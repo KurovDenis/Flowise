@@ -4,7 +4,7 @@ import { DeleteAttributeGroupInputSchema } from '../schemas/attributeSchemas'
 export async function deleteAttributeGroup(args: { apiClient: EventlyApiClient; id: string }): Promise<any> {
     const { apiClient, ...restArgs } = args
     const validatedArgs = validateInput(DeleteAttributeGroupInputSchema, restArgs)
-    await apiClient.delete(`/attribute-groups/${validatedArgs.id}`)
+    await apiClient.delete(`/attributevalue/attribute-groups/${validatedArgs.id}`)
     return { success: true, message: 'Attribute group deleted' }
 }
 

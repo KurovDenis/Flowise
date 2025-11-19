@@ -5,6 +5,6 @@ export async function updateEnumeration(args: { apiClient: EventlyApiClient; id:
     const { apiClient, ...restArgs } = args
     const validatedArgs = validateInput(UpdateEnumerationInputSchema, restArgs)
     const { id, ...updateData } = validatedArgs
-    return await apiClient.put(`/enumerations/${id}`, updateData)
+    return await apiClient.put(`/attributevalue/enumerations/${id}`, updateData)
 }
 

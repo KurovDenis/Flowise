@@ -5,6 +5,6 @@ export async function updateObjectType(args: { apiClient: EventlyApiClient; obje
     const { apiClient, ...restArgs } = args
     const validatedArgs = validateInput(UpdateObjectTypeInputSchema, restArgs)
     const { objectTypeCode, ...updateData } = validatedArgs
-    return await apiClient.put(`/object-types/${objectTypeCode}`, updateData)
+    return await apiClient.put(`/attributevalue/object-types/${objectTypeCode}`, updateData)
 }
 
