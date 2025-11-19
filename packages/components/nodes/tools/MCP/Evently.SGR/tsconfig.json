@@ -1,0 +1,14 @@
+{
+    "extends": "../../../../tsconfig.json",
+    "compilerOptions": {
+        "outDir": "./dist",
+        "declaration": true,
+        "declarationMap": true,
+        "paths": {
+            "@evently/mcp-shared": ["../shared"]
+        }
+    },
+    "include": ["**/*.ts", "../shared/**/*.ts"],
+    "exclude": ["node_modules", "dist", "**/*.test.ts", "**/*.spec.ts"]
+}
+
