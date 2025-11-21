@@ -73,10 +73,25 @@ class EventlyMCPServer {
                     // AttributeTypes tools
                     {
                         name: 'get_attribute_types',
-                        description: 'Get all attribute types from Evently API',
+                        description: 'Get all attribute types from Evently API with pagination and search',
                         inputSchema: {
                             type: 'object',
-                            properties: {}
+                            properties: {
+                                searchTerm: { 
+                                    type: 'string', 
+                                    description: 'Search by name or description' 
+                                },
+                                page: { 
+                                    type: 'number', 
+                                    description: 'Page number (starting from 1)', 
+                                    default: 1 
+                                },
+                                pageSize: { 
+                                    type: 'number', 
+                                    description: 'Page size (maximum 100)', 
+                                    default: 10 
+                                }
+                            }
                         }
                     },
                     {
@@ -893,10 +908,18 @@ class EventlyMCPServer {
 
                 switch (name) {
                     // AttributeTypes
-                    case 'get_attribute_types':
-                        validateInput(GetAttributeTypesInputSchema, args)
-                        result = await this.apiClient.get('/attributevalue/attribute-types')
+                    case 'get_attribute_types': {
+                        const getAttrTypesArgs = validateInput(GetAttributeTypesInputSchema, args)
+                        const queryParams = new URLSearchParams()
+
+                        if (getAttrTypesArgs.searchTerm) queryParams.append('searchTerm', getAttrTypesArgs.searchTerm)
+                        queryParams.append('page', (getAttrTypesArgs.page ?? 1).toString())
+                        queryParams.append('pageSize', (getAttrTypesArgs.pageSize ?? 10).toString())
+
+                        const queryString = queryParams.toString()
+                        result = await this.apiClient.get(`/attributevalue/attribute-types${queryString ? `?${queryString}` : ''}`)
                         break
+                    }
 
                     case 'get_attribute_type': {
                         const getAttrTypeArgs = validateInput(GetAttributeTypeInputSchema, args)

@@ -10,6 +10,16 @@ export interface AttributeTypeResponse {
     dataType: string
 }
 
+export interface GetAttributeTypesResponse {
+    attributeTypes: AttributeTypeResponse[]
+    totalCount: number
+    page: number
+    pageSize: number
+    totalPages: number
+    hasNextPage: boolean
+    hasPreviousPage: boolean
+}
+
 export interface CreateAttributeTypeRequest {
     name: string
     description?: string

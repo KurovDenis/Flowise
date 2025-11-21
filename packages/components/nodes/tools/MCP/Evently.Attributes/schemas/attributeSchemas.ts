@@ -1,7 +1,11 @@
 import { z } from 'zod'
 
 // AttributeTypes validation schemas
-export const GetAttributeTypesInputSchema = z.object({})
+export const GetAttributeTypesInputSchema = z.object({
+    searchTerm: z.string().optional(),
+    page: z.number().int().positive().default(1),
+    pageSize: z.number().int().positive().max(100).default(10)
+})
 
 export const GetAttributeTypeInputSchema = z.object({
     id: z.string().uuid('Invalid UUID format for attribute type ID')

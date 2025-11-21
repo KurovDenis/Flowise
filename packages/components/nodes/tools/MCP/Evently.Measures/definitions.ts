@@ -79,12 +79,15 @@ export const MEASURE_TOOLS: Tool[] = [
             type: 'object',
             properties: {
                 name: { type: 'string', description: 'Name of the measure unit (max 100 characters)' },
-                shortName: { type: 'string', description: 'Short name of the measure unit (max 10 characters)' },
+                shortName: { type: 'string', description: 'Short name of the measure unit (max 20 characters)' },
                 measureUnitGroupId: { type: 'string', description: 'UUID of the measure unit group' },
                 bmnCode: { type: 'number', description: 'BMN code (integer, optional)' },
                 isBase: { type: 'boolean', description: 'Whether this is a base unit' },
                 isSystem: { type: 'boolean', description: 'Whether this is a system unit' },
-                conversionFactor: { type: 'number', description: 'Conversion factor to base unit' }
+                isCalendar: { type: 'boolean', description: 'Whether this is a calendar unit (month, quarter, year - cannot have fixed conversion factor)' },
+                conversionFactor: { type: 'number', description: 'Conversion factor to base unit' },
+                systemName: { type: 'string', description: 'System name of the measure unit (max 100 characters, optional)' },
+                internationalCode: { type: 'string', description: 'International code of the measure unit (max 20 characters, optional)' }
             },
             required: ['name', 'shortName', 'measureUnitGroupId']
         }
@@ -97,10 +100,13 @@ export const MEASURE_TOOLS: Tool[] = [
             properties: {
                 id: { type: 'string', description: 'UUID of the measure unit' },
                 name: { type: 'string', description: 'Name of the measure unit (max 100 characters)' },
-                shortName: { type: 'string', description: 'Short name of the measure unit (max 10 characters)' },
+                shortName: { type: 'string', description: 'Short name of the measure unit (max 20 characters)' },
                 bmnCode: { type: 'number', description: 'BMN code (integer, optional)' },
                 isBase: { type: 'boolean', description: 'Whether this is a base unit' },
-                conversionFactor: { type: 'number', description: 'Conversion factor to base unit' }
+                isCalendar: { type: 'boolean', description: 'Whether this is a calendar unit (month, quarter, year - cannot have fixed conversion factor)' },
+                conversionFactor: { type: 'number', description: 'Conversion factor to base unit' },
+                systemName: { type: 'string', description: 'System name of the measure unit (max 100 characters, optional)' },
+                internationalCode: { type: 'string', description: 'International code of the measure unit (max 20 characters, optional)' }
             },
             required: ['id']
         }
@@ -114,6 +120,19 @@ export const MEASURE_TOOLS: Tool[] = [
                 id: { type: 'string', description: 'UUID of the measure unit' }
             },
             required: ['id']
+        }
+    },
+    {
+        name: 'convert_measure_unit',
+        description: 'Convert a value between different measure units within the same group',
+        inputSchema: {
+            type: 'object',
+            properties: {
+                sourceUnitId: { type: 'string', description: 'UUID of the source measure unit' },
+                targetUnitId: { type: 'string', description: 'UUID of the target measure unit' },
+                value: { type: 'number', description: 'Value to convert (must be positive)' }
+            },
+            required: ['sourceUnitId', 'targetUnitId', 'value']
         }
     }
 ]

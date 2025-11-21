@@ -10,10 +10,11 @@ import { getMeasureUnit } from '../tools/getMeasureUnit'
 import { createMeasureUnit } from '../tools/createMeasureUnit'
 import { updateMeasureUnit } from '../tools/updateMeasureUnit'
 import { deleteMeasureUnit } from '../tools/deleteMeasureUnit'
+import { convertMeasureUnit } from '../tools/convertMeasureUnit'
 
 /**
  * Measures MCP Server
- * Provides 9 measure-related tools for managing measure unit groups and measure units
+ * Provides 10 measure-related tools for managing measure unit groups and measure units
  */
 export class MeasuresMCPServer extends MCPServerBase {
     private toolHandlers: Map<string, (args: any) => Promise<any>> = new Map()
@@ -24,7 +25,7 @@ export class MeasuresMCPServer extends MCPServerBase {
     }
 
     /**
-     * Register all 9 measure tools
+     * Register all 10 measure tools
      */
     private registerTools(): void {
         // Measure Unit Groups (4 tools)
@@ -33,12 +34,13 @@ export class MeasuresMCPServer extends MCPServerBase {
         this.toolHandlers.set('update_measure_unit_group', updateMeasureUnitGroup)
         this.toolHandlers.set('delete_measure_unit_group', deleteMeasureUnitGroup)
 
-        // Measure Units (5 tools)
+        // Measure Units (6 tools)
         this.toolHandlers.set('get_measure_units', getMeasureUnits)
         this.toolHandlers.set('get_measure_unit', getMeasureUnit)
         this.toolHandlers.set('create_measure_unit', createMeasureUnit)
         this.toolHandlers.set('update_measure_unit', updateMeasureUnit)
         this.toolHandlers.set('delete_measure_unit', deleteMeasureUnit)
+        this.toolHandlers.set('convert_measure_unit', convertMeasureUnit)
     }
 
     /**

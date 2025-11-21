@@ -37,6 +37,15 @@ describe('Evently MCP Integration Tests', () => {
             expect(() => validateInput(GetAttributeTypesInputSchema, validInput)).not.toThrow()
         })
 
+        it('should validate input schema for get all attribute types with pagination', () => {
+            const validInput = {
+                searchTerm: 'test',
+                page: 1,
+                pageSize: 10
+            }
+            expect(() => validateInput(GetAttributeTypesInputSchema, validInput)).not.toThrow()
+        })
+
         it('should validate input schema for create attribute type', () => {
             const validInput = {
                 name: 'Test Type',
@@ -72,7 +81,12 @@ describe('Evently MCP Integration Tests', () => {
 
         it.skip('should get all attribute types via API', async () => {
             const result = await apiClient.get('/attributevalue/attribute-types')
-            expect(Array.isArray(result)).toBe(true)
+            expect(result).toBeDefined()
+            expect(result.attributeTypes).toBeDefined()
+            expect(Array.isArray(result.attributeTypes)).toBe(true)
+            expect(result.totalCount).toBeDefined()
+            expect(result.page).toBeDefined()
+            expect(result.pageSize).toBeDefined()
         })
 
         it.skip('should delete created attribute type via API', async () => {

@@ -127,7 +127,7 @@ All Evently MCP servers share common infrastructure located in the `shared/` dir
 
 **Key Tools:**
 - `get_measure_unit_groups`, `create_measure_unit_group`, `update_measure_unit_group`, `delete_measure_unit_group`
-- `get_measure_units`, `get_measure_unit`, `create_measure_unit`, `update_measure_unit`, `delete_measure_unit`
+- `get_measure_units`, `get_measure_unit`, `create_measure_unit`, `update_measure_unit`, `delete_measure_unit`, `convert_measure_unit`
 
 ## Configuration
 
